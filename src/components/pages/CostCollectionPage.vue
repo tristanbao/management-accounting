@@ -474,10 +474,10 @@ function applySceneData() {
   } else if (m === 'driver') {
     // 驱动因子分摊：每个场景有各自的驱动因子和受益对象类型
     const driverData = {
-      customer: { item: '客户经理管户工时成本', driver: '客户数（AUM占比）', value: 328, ratio: 62, benefitType: '客群', benefitCode: 'A03财富客群（高净值客户）', src: 'CRM系统' },
-      product: { item: '产品推广运营费', driver: '授信转化客户数', value: 286, ratio: 55, benefitType: '产品', benefitCode: '普惠经营贷 / 稳利盈系列', src: '核心业务系统' },
-      channel: { item: '自助设备运营费', driver: '设备开机时长', value: 6000, ratio: 45, benefitType: '渠道', benefitCode: '手机银行 / 网上银行 / 营业网点 / 客服中心', src: 'IT监控系统（改造）' },
-      public: { item: '科技系统运维费', driver: '工时占比', value: 1200, ratio: 30, benefitType: '条线', benefitCode: '零售金融部 / 对公业务部 / 普惠金融部', src: '人力资源系统（改造）' }
+      customer: { item: '客户经理管户工时成本', driver: '客户数（AUM占比）', value: 328, ratio: 62, benefitType: '客群', benefitCode: 'A03财富客群（高净值客户）', src: 'CRM系统', amount: 186000 },
+      product: { item: '产品推广运营费', driver: '授信转化客户数', value: 286, ratio: 55, benefitType: '产品', benefitCode: '普惠经营贷 / 稳利盈系列', src: '核心业务系统', amount: 158000 },
+      channel: { item: '自助设备运营费', driver: '交易笔数占比', value: 342000, ratio: 100, benefitType: '渠道', benefitCode: '手机银行 / 网上银行 / 营业网点 / 客服中心', src: '核心业务系统（改造）', amount: 342000 },
+      public: { item: '科技系统运维费', driver: '工时占比', value: 1200, ratio: 30, benefitType: '条线', benefitCode: '零售金融部 / 对公业务部 / 普惠金融部', src: '人力资源系统（改造）', amount: 120000 }
     }
     const docMap = { customer: '31', product: '32', channel: '33', public: '34' }
     const d = driverData[props.activeScene]
@@ -491,11 +491,10 @@ function applySceneData() {
       benefitCode: d.benefitCode,
       dataSource: d.src,
       collectFreq: '月',
-      amount: 0, org: '', line: '', channel: '', productCode: '',
-      customerSegment: '', eventCode: '', owner: '',
-      workHours: 0, workHourRatio: 0,
+      amount: d.amount,
+      org: '九江银行总行', line: '金融科技部',
       poolLevel: '', benefitScope: '', poolDimension: '',
-      poolRuleCode: '', trialAmount: 0, approvalStatus: ''
+      poolRuleCode: '', trialAmount: d.amount, approvalStatus: ''
     })
   } else {
     // 公共成本池分摊
