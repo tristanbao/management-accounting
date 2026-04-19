@@ -408,21 +408,87 @@ const activeMethod = ref('direct')
 
 // 时间周期管理
 const periodOptions = [
-  { label: '2026年一季度', value: '2026Q1', start: '2026-01-01', end: '2026-03-31', desc: '2026年Q1试算数据' },
-  { label: '2025年四季度', value: '2025Q4', start: '2025-10-01', end: '2025-12-31', desc: '2025年Q4历史数据' },
-  { label: '2025年三季度', value: '2025Q3', start: '2025-07-01', end: '2025-09-30', desc: '2025年Q3历史数据' },
-  { label: '2025年上半年', value: '2025H1', start: '2025-01-01', end: '2025-06-30', desc: '2025年H1历史数据' },
-  { label: '2024年全年', value: '2024FY', start: '2024-01-01', end: '2024-12-31', desc: '2024财年数据' },
+  { label: '日自动化（T+1）', value: 'daily-auto', start: '', end: '', desc: '每日自动跑批，结果由用户确认生效', mode: 'auto', status: 'running' },
+  { label: '月度（自动）', value: 'monthly-auto', start: '', end: '', desc: '每月末日自动归集，次月初用户确认', mode: 'auto', status: 'idle' },
+  { label: '季度（手工试算）', value: 'quarterly-trial', start: '2026-01-01', end: '2026-03-31', desc: '季度手工试算，用于校验自动化结果', mode: 'manual', status: 'idle' },
+  { label: '2026年一季度', value: '2026Q1', start: '2026-01-01', end: '2026-03-31', desc: '2026年Q1历史数据', mode: 'history', status: 'confirmed' },
+  { label: '2025年四季度', value: '2025Q4', start: '2025-10-01', end: '2025-12-31', desc: '2025年Q4历史数据', mode: 'history', status: 'confirmed' },
+  { label: '2025年三季度', value: '2025Q3', start: '2025-07-01', end: '2025-09-30', desc: '2025年Q3历史数据', mode: 'history', status: 'confirmed' },
 ]
-const activePeriod = ref('2026Q1')
+const activePeriod = ref('daily-auto')
 const showPeriodModal = ref(false)
 const selectedPeriodOption = computed(() => periodOptions.find(p => p.value === activePeriod.value) || periodOptions[0])
-const periodRange = computed(() => `${selectedPeriodOption.value.start} ~ ${selectedPeriodOption.value.end}`)
+const periodRange = computed(() => {
+  const p = selectedPeriodOption.value
+  if (p.mode === 'auto') return p.desc
+  return p.start && p.end ? `${p.start} ~ ${p.end}` : p.desc
+})
 
 function openPeriodModal() { showPeriodModal.value = true }
 function selectPeriod(val) {
   activePeriod.value = val
   showPeriodModal.value = false
+  // 模拟自动化跑批
+  if (val === 'daily-auto') {
+    startAutoRun()
+  }
+}
+
+// 自动化跑批模拟状态
+const autoRunStatus = ref('idle') // idle | running | pending | confirmed | error
+const autoRunProgress = ref(0)
+const autoRunLogs = ref([])
+const autoRunDate = ref('')
+
+function startAutoRun() {
+  if (autoRunStatus.value === 'running') return
+  autoRunStatus.value = 'running'
+  autoRunProgress.value = 0
+  autoRunLogs.value = []
+  autoRunDate.value = new Date().toLocaleDateString('zh-CN')
+
+  const steps = [
+    { label: '拉取昨日费用报销数据', duration: 600, icon: '↗' },
+    { label: '拉取CRM工时登记数据', duration: 500, icon: '↗' },
+    { label: '拉取核心系统交易量', duration: 700, icon: '↗' },
+    { label: '拉取财务系统公共费用', duration: 500, icon: '↗' },
+    { label: '执行直归规则 FR-D001~D004', duration: 400, icon: '⚙' },
+    { label: '执行服务关系规则 FR-S001~S004', duration: 400, icon: '⚙' },
+    { label: '执行驱动因子规则 FR-V001~V004', duration: 500, icon: '⚙' },
+    { label: '执行公共池分摊规则 FR-P001~P004', duration: 400, icon: '⚙' },
+    { label: '差异校验与预警', duration: 300, icon: '✓' },
+    { label: '生成归集结果，待用户确认', duration: 200, icon: '✓' },
+  ]
+
+  let delay = 0
+  steps.forEach((step, i) => {
+    setTimeout(() => {
+      autoRunLogs.value.unshift({ icon: step.icon, label: step.label, time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) })
+      autoRunProgress.value = Math.round(((i + 1) / steps.length) * 100)
+      if (i === steps.length - 1) {
+        setTimeout(() => {
+          autoRunStatus.value = 'pending'
+          autoRunProgress.value = 100
+        }, 300)
+      }
+    }, delay)
+    delay += step.duration
+  })
+}
+
+function confirmAutoRun() {
+  autoRunStatus.value = 'confirmed'
+}
+
+function rejectAutoRun() {
+  autoRunStatus.value = 'error'
+  autoRunLogs.value.unshift({ icon: '✕', label: '结果已驳回，请检查异常数据后重新归集', time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) })
+}
+
+function resetAutoRun() {
+  autoRunStatus.value = 'idle'
+  autoRunProgress.value = 0
+  autoRunLogs.value = []
 }
 
 // 各场景数据按周期变化
@@ -572,6 +638,48 @@ const money = (v) => new Intl.NumberFormat('zh-CN', {
         @change-period="openPeriodModal"
       />
 
+      <!-- 自动化跑批状态面板 -->
+      <div v-if="autoRunStatus !== 'idle'" class="auto-run-panel" :class="'status-' + autoRunStatus">
+        <div class="auto-run-header">
+          <div class="auto-run-title">
+            <span class="auto-icon" v-if="autoRunStatus === 'running'">&#9696;</span>
+            <span class="auto-icon confirm-icon" v-else-if="autoRunStatus === 'pending'">?</span>
+            <span class="auto-icon ok-icon" v-else-if="autoRunStatus === 'confirmed'">&#10003;</span>
+            <span class="auto-icon err-icon" v-else-if="autoRunStatus === 'error'">&#10005;</span>
+            <div>
+              <strong v-if="autoRunStatus === 'running'">自动归集跑批中</strong>
+              <strong v-else-if="autoRunStatus === 'pending'">自动归集完成，待您确认</strong>
+              <strong v-else-if="autoRunStatus === 'confirmed'">归集结果已确认生效</strong>
+              <strong v-else-if="autoRunStatus === 'error'">归集结果已驳回</strong>
+              <small v-if="autoRunDate">执行日期：{{ autoRunDate }}</small>
+            </div>
+          </div>
+          <div class="auto-run-actions">
+            <!-- 进度条 -->
+            <div v-if="autoRunStatus === 'running'" class="auto-progress">
+              <div class="auto-progress-bar">
+                <div class="auto-progress-fill" :style="{ width: autoRunProgress + '%' }"></div>
+              </div>
+              <span class="auto-progress-text">{{ autoRunProgress }}%</span>
+            </div>
+            <!-- 确认/驳回按钮 -->
+            <template v-else-if="autoRunStatus === 'pending'">
+              <button class="btn-reject" @click="rejectAutoRun">驳回</button>
+              <button class="btn-confirm" @click="confirmAutoRun">确认归集结果</button>
+            </template>
+            <button v-else class="btn-reset" @click="resetAutoRun">关闭</button>
+          </div>
+        </div>
+        <!-- 跑批日志 -->
+        <div class="auto-run-logs">
+          <div v-for="(log, i) in autoRunLogs" :key="i" class="auto-log-entry">
+            <span class="auto-log-icon">{{ log.icon }}</span>
+            <span class="auto-log-time">{{ log.time }}</span>
+            <span class="auto-log-label">{{ log.label }}</span>
+          </div>
+        </div>
+      </div>
+
       <!-- 仪表盘/方法总览 -->
       <DashboardPage
         v-if="activePage === 'dashboard'"
@@ -674,6 +782,127 @@ const money = (v) => new Intl.NumberFormat('zh-CN', {
 </template>
 
 <style>
+/* ======================================================
+   自动化归集跑批状态面板
+   ====================================================== */
+.auto-run-panel {
+  border-radius: 16px;
+  padding: 16px 20px;
+  margin: 0 24px 16px;
+  border: 1px solid;
+  animation: slideDown .2s ease;
+}
+@keyframes slideDown { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+
+.auto-run-panel.status-running {
+  background: rgba(85,200,255,.06);
+  border-color: rgba(85,200,255,.25);
+}
+.auto-run-panel.status-pending {
+  background: rgba(247,196,106,.06);
+  border-color: rgba(247,196,106,.3);
+}
+.auto-run-panel.status-confirmed {
+  background: rgba(73,220,177,.06);
+  border-color: rgba(73,220,177,.3);
+}
+.auto-run-panel.status-error {
+  background: rgba(255,107,107,.06);
+  border-color: rgba(255,107,107,.25);
+}
+
+.auto-run-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.auto-run-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.auto-icon {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; flex-shrink: 0;
+}
+.auto-icon { background: rgba(85,200,255,.15); color: var(--cyan); animation: spin 1.5s linear infinite; }
+.confirm-icon { background: rgba(247,196,106,.15); color: var(--gold); animation: none; }
+.ok-icon { background: rgba(73,220,177,.15); color: var(--teal); animation: none; }
+.err-icon { background: rgba(255,107,107,.15); color: #ff6b6b; animation: none; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+.auto-run-title strong { display: block; font-size: 14px; color: var(--text); }
+.auto-run-title small { display: block; font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+.auto-run-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+
+/* 进度条 */
+.auto-progress { display: flex; align-items: center; gap: 8px; }
+.auto-progress-bar { width: 120px; height: 6px; border-radius: 999px; background: rgba(255,255,255,.08); overflow: hidden; }
+.auto-progress-fill { height: 100%; background: linear-gradient(90deg, var(--cyan), var(--teal)); border-radius: 999px; transition: width .3s ease; }
+.auto-progress-text { font-size: 12px; color: var(--cyan); font-weight: bold; min-width: 36px; }
+
+/* 按钮 */
+.btn-confirm {
+  padding: 8px 16px;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(135deg, var(--teal), var(--cyan));
+  color: #0a0e1a;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all .15s ease;
+}
+.btn-confirm:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(73,220,177,.3); }
+.btn-reject {
+  padding: 8px 16px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,107,107,.4);
+  background: rgba(255,107,107,.1);
+  color: #ff6b6b;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all .15s ease;
+}
+.btn-reject:hover { background: rgba(255,107,107,.2); }
+.btn-reset {
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(85,200,255,.2);
+  background: rgba(85,200,255,.08);
+  color: var(--cyan);
+  font-size: 11px;
+  cursor: pointer;
+}
+.btn-reset:hover { background: rgba(85,200,255,.15); }
+
+/* 日志 */
+.auto-run-logs {
+  max-height: 180px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(85,200,255,.2) transparent;
+}
+.auto-log-entry {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-family: 'Fira Code', 'Consolas', monospace;
+  animation: logFade .2s ease;
+}
+@keyframes logFade { from { opacity: 0; } to { opacity: 1; } }
+.auto-log-icon { flex-shrink: 0; width: 14px; text-align: center; color: var(--cyan); }
+.auto-log-time { flex-shrink: 0; color: var(--muted); min-width: 64px; }
+.auto-log-label { color: var(--text); opacity: .85; }
+
 /* 周期选择弹窗 */
 .modal-overlay {
   position: fixed;
