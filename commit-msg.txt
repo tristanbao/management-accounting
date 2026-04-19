@@ -1,0 +1,9 @@
+fix: diversify scene data and improve system integration map layout
+
+- Redesign system integration map: left source systems, center management
+  accounting platform, right data supply systems, bottom output layer
+- Fix system tags: only management accounting platform is new, all others
+  are transform or integrate
+- Diversify four scene data amounts with distinct ROI and allocation ratios
+- Fix hardcoded amount in integration log message
+- Clean up unused CSS classes from old layout

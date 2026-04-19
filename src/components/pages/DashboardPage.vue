@@ -254,16 +254,8 @@ const processSteps = [
       </div>
 
       <div class="sys-map">
-        <div class="sys-center">
-          <div class="sys-center-core">
-            <strong>管理会计平台</strong>
-            <small>新建 · 规则引擎 · 归集台账 · 分摊试算 · 多维分析</small>
-          </div>
-          <div class="sys-center-badge">本项目核心产出</div>
-        </div>
-
         <!-- 左侧：源业务系统 -->
-        <div class="sys-tier sys-tier-source">
+        <div class="sys-source-col">
           <div class="sys-tier-label">源业务系统</div>
           <div class="sys-card" style="--sc: #49dcb1">
             <div class="sys-card-head">
@@ -276,7 +268,7 @@ const processSteps = [
           <div class="sys-card" style="--sc: #55c8ff">
             <div class="sys-card-head">
               <strong>CRM系统</strong>
-              <span class="sys-tag tag-new">新增</span>
+              <span class="sys-tag tag-transform">改造</span>
             </div>
             <p>新增客户经理工时登记；服务关系配置；管户AUM占比计算</p>
             <div class="sys-fields">接口字段：serverStaff, workHours, workHourRatio, serviceScope</div>
@@ -299,8 +291,19 @@ const processSteps = [
           </div>
         </div>
 
+        <!-- 中间：管理会计平台（居中） -->
+        <div class="sys-center-col">
+          <div class="sys-center">
+            <div class="sys-center-core">
+              <strong>管理会计平台</strong>
+              <small>新建 · 规则引擎 · 归集台账 · 分摊试算 · 多维分析</small>
+            </div>
+            <div class="sys-center-badge">本项目核心产出</div>
+          </div>
+        </div>
+
         <!-- 右侧：数据供给系统 -->
-        <div class="sys-tier sys-tier-supply">
+        <div class="sys-supply-col">
           <div class="sys-tier-label">数据供给系统</div>
           <div class="sys-card" style="--sc: #55c8ff">
             <div class="sys-card-head">
@@ -313,7 +316,7 @@ const processSteps = [
           <div class="sys-card" style="--sc: #f7c46a">
             <div class="sys-card-head">
               <strong>信贷管理系统</strong>
-              <span class="sys-tag tag-new">新增</span>
+              <span class="sys-tag tag-transform">改造</span>
             </div>
             <p>贷款余额/发放额/户数；信贷产品与条线映射；不良率关联成本</p>
             <div class="sys-fields">接口字段：loanBalance, loanAmount, creditProductCode, lineCode</div>
@@ -352,39 +355,48 @@ const processSteps = [
           </div>
         </div>
 
-        <!-- 下侧：消费分析系统 -->
-        <div class="sys-tier sys-tier-consume">
-          <div class="sys-tier-label">消费分析系统（数据输出）</div>
-          <div class="sys-card sys-card-small" style="--sc: #55c8ff">
-            <div class="sys-card-head">
-              <strong>经营分析平台</strong>
-              <span class="sys-tag tag-link">对接</span>
-            </div>
-            <p>多维盈利分析；客群/产品/渠道ROI看板</p>
+        <!-- 数据流向箭头 -->
+        <div class="sys-arrows">
+          <div class="arrow-group">
+            <div class="arrow-line arrow-left"></div>
+            <div class="arrow-label arrow-label-left">数据拉取</div>
           </div>
-          <div class="sys-card sys-card-small" style="--sc: #49dcb1">
-            <div class="sys-card-head">
-              <strong>数据仓库/BI</strong>
-              <span class="sys-tag tag-link">对接</span>
-            </div>
-            <p>归集结果落标；成本主题宽表；定期ETL</p>
-          </div>
-          <div class="sys-card sys-card-small" style="--sc: #f7c46a">
-            <div class="sys-card-head">
-              <strong>监管报送系统</strong>
-              <span class="sys-tag tag-link">对接</span>
-            </div>
-            <p>管理会计数据监管报告；成本分摊结果披露</p>
+          <div class="arrow-group">
+            <div class="arrow-line arrow-right"></div>
+            <div class="arrow-label arrow-label-right">数据处理</div>
           </div>
         </div>
 
-        <div class="sys-conn-left">
-          <div class="conn-line"></div>
-          <div class="conn-arrow">数据拉取</div>
-        </div>
-        <div class="sys-conn-right">
-          <div class="conn-line"></div>
-          <div class="conn-arrow">数据推送</div>
+        <!-- 下侧：数据输出系统 -->
+        <div class="sys-output-section">
+          <div class="sys-output-label">
+            <div class="output-label-line"></div>
+            <span>数据输出层</span>
+            <div class="output-label-line"></div>
+          </div>
+          <div class="sys-output-cards">
+            <div class="sys-card sys-card-small" style="--sc: #55c8ff">
+              <div class="sys-card-head">
+                <strong>经营分析平台</strong>
+                <span class="sys-tag tag-link">对接</span>
+              </div>
+              <p>多维盈利分析；客群/产品/渠道ROI看板</p>
+            </div>
+            <div class="sys-card sys-card-small" style="--sc: #49dcb1">
+              <div class="sys-card-head">
+                <strong>数据仓库/BI</strong>
+                <span class="sys-tag tag-link">对接</span>
+              </div>
+              <p>归集结果落标；成本主题宽表；定期ETL</p>
+            </div>
+            <div class="sys-card sys-card-small" style="--sc: #f7c46a">
+              <div class="sys-card-head">
+                <strong>监管报送系统</strong>
+                <span class="sys-tag tag-link">对接</span>
+              </div>
+              <p>管理会计数据监管报告；成本分摊结果披露</p>
+            </div>
+          </div>
         </div>
       </div>
     </article>
@@ -584,24 +596,39 @@ const processSteps = [
 .system-map-panel { grid-column: 1 / -1; }
 
 .sys-map {
-  position: relative;
   display: grid;
-  grid-template-columns: 1fr 140px 1fr;
+  grid-template-columns: 1fr auto 1fr;
+  grid-template-rows: auto auto auto;
   gap: 16px;
   align-items: start;
+  position: relative;
+}
+
+/* 左侧：源业务系统 */
+.sys-source-col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* 中间：管理会计平台 */
+.sys-center-col {
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
 }
 
 .sys-center {
-  grid-column: 2;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 6px;
-  padding: 14px 10px;
+  padding: 14px 16px;
   border-radius: 16px;
   background: linear-gradient(135deg, rgba(73,220,177,.12), rgba(85,200,255,.12));
   border: 2px solid rgba(85,200,255,.3);
   text-align: center;
+  min-width: 120px;
 }
 .sys-center-core strong { display: block; font-size: 13px; color: var(--cyan); }
 .sys-center-core small { display: block; font-size: 10px; color: var(--muted); margin-top: 4px; line-height: 1.4; }
@@ -613,22 +640,99 @@ const processSteps = [
   color: var(--teal);
 }
 
-.sys-tier { display: flex; flex-direction: column; gap: 10px; }
+/* 右侧：数据供给系统 */
+.sys-supply-col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* 数据流向箭头行 */
+.sys-arrows {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 0;
+}
+
+.arrow-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.arrow-line {
+  width: 80px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--teal), var(--cyan));
+  border-radius: 2px;
+  position: relative;
+}
+.arrow-line::after {
+  content: '';
+  position: absolute;
+  right: -1px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 4px solid transparent;
+  border-left-color: var(--cyan);
+}
+.arrow-line.arrow-left::after {
+  right: auto;
+  left: -1px;
+  border-left-color: transparent;
+  border-right-color: var(--teal);
+}
+
+.arrow-label {
+  font-size: 10px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* 数据输出层 */
+.sys-output-section {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sys-output-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.output-label-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(85,200,255,.2));
+}
+.output-label-line:last-child {
+  background: linear-gradient(90deg, rgba(85,200,255,.2), transparent);
+}
+.sys-output-label span {
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  white-space: nowrap;
+}
+
+.sys-output-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+/* 标签文字 */
 .sys-tier-label {
   font-size: 10px;
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: .08em;
-  margin-bottom: 2px;
-}
-
-.sys-tier-consume {
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-  padding-top: 8px;
-  border-top: 1px dashed rgba(85,200,255,.15);
+  margin-bottom: 4px;
 }
 
 .sys-card {
@@ -666,27 +770,15 @@ const processSteps = [
 }
 
 .sys-conn-left,
-.sys-conn-right {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-}
-.sys-conn-left { left: -40px; }
-.sys-conn-right { right: -40px; }
-.conn-line { width: 30px; height: 2px; background: linear-gradient(90deg, transparent, rgba(85,200,255,.4)); }
-.sys-conn-right .conn-line { background: linear-gradient(90deg, rgba(85,200,255,.4), transparent); }
-.conn-arrow { font-size: 10px; color: var(--muted); }
+.sys-conn-right { display: none; }
 
 @media (max-width: 1100px) {
-  .sys-map { grid-template-columns: 1fr; }
-  .sys-center { grid-column: 1; }
-  .sys-tier-source { grid-column: 1; }
-  .sys-tier-supply { grid-column: 1; }
-  .sys-tier-consume { grid-column: 1; }
-  .sys-conn-left, .sys-conn-right { display: none; }
+  .sys-map {
+    grid-template-columns: 1fr;
+  }
+  .sys-center-col {
+    padding: 0;
+  }
+  .sys-arrows { display: none; }
 }
 </style>

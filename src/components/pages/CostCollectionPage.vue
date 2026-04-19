@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 const props = defineProps({
   scenes: { type: Object, required: true },
@@ -73,7 +73,7 @@ function getIntegrationSteps(method, scene) {
       { type: 'api', system: '产品管理系统', message: '查询产品[稳利盈6M]归属条线，获取产品编码与条线映射...', duration: 400 },
       { type: 'api', system: '营销管理平台', message: `拉取活动编号[ACT-PRIV-2026Q1-015]关联产品与客群数据...`, duration: 350 },
       { type: 'check', system: '管理会计平台', message: `直归规则[FR-D001]命中校验：客群[A03]归属明确，标记为直接归集`, duration: 300 },
-      { type: 'done', system: '费用报销系统', message: `写入归集台账-客户维，写入金额 ${props.money ? '¥286,000' : '¥286,000'}，状态：已归集`, duration: 300 },
+      { type: 'done', system: '费用报销系统', message: `写入归集台账-客户维，写入金额 ¥186,000，状态：已归集`, duration: 300 },
     ]
   } else if (method === 'service') {
     return [
@@ -193,48 +193,156 @@ const integrationSources = computed(() => {
   const sceneLabel = { customer: '客户经营活动', product: '产品销售推动', channel: '渠道运营支撑', public: '公共管理支撑' }[scene]
 
   if (m === 'direct') {
-    return {
-      title: '外部系统数据接入',
-      systems: [
+    const systemsByScene = {
+      customer: [
         { name: '费用报销系统', role: '费用申请原始数据来源', fields: ['documentNo', 'costSubject', 'amount', 'org', 'line'], status: '已对接', color: '#49dcb1' },
         { name: 'CRM系统', role: '客户经理与客群归属查询', fields: ['owner', 'customerSegment'], status: '已对接', color: '#55c8ff' },
         { name: '产品管理系统', role: '产品编码与条线映射', fields: ['productCode', 'channel'], status: '已对接', color: '#f7c46a' },
-        { name: '营销管理平台', role: '活动编号与转化数据', fields: ['eventCode'], status: '改造中', color: '#e879f9' }
+        { name: '权益平台', role: '客户权益领取记录归集', fields: ['eventCode', 'customerSegment'], status: '改造中', color: '#e879f9' }
       ],
-      note: '直归判定依赖各业务系统在申请环节录入归集字段，审批通过后直接写入归集台账，无需二次分摊。'
+      product: [
+        { name: '营销管理平台', role: '产品推广计划与广告投放', fields: ['productCode', 'eventCode', 'channel'], status: '已对接', color: '#49dcb1' },
+        { name: '数字营销平台', role: '广告转化线索数据拉取', fields: ['eventCode', 'conversionCount'], status: '改造中', color: '#55c8ff' },
+        { name: '费用报销系统', role: '佣金激励发放数据', fields: ['documentNo', 'productCode', 'amount'], status: '已对接', color: '#f7c46a' },
+        { name: 'CRM系统', role: '产品经理支持产品列表', fields: ['benefitProducts', 'serverStaff'], status: '新增中', color: '#e879f9' }
+      ],
+      channel: [
+        { name: '核心业务系统', role: '各渠道交易笔数/金额数据', fields: ['driverValue', 'ratio'], status: '已对接', color: '#49dcb1' },
+        { name: 'IT监控系统', role: '自助设备开机时长日志', fields: ['driverValue', 'benefitCode'], status: '已对接', color: '#55c8ff' },
+        { name: '资产管理系统', role: '网点面积与设备台账', fields: ['benefitType', 'benefitCode'], status: '改造中', color: '#f7c46a' },
+        { name: '财务系统', role: '成本科目与原始发生额', fields: ['costSubject', 'dataSource'], status: '已对接', color: '#e879f9' }
+      ],
+      public: [
+        { name: '财务系统', role: '公共费用原始台账', fields: ['documentNo', 'costSubject', 'trialAmount'], status: '已对接', color: '#49dcb1' },
+        { name: '核心业务系统', role: '各分行收入贡献比例计算', fields: ['benefitScope', 'poolDimension'], status: '已对接', color: '#55c8ff' },
+        { name: '人力资源系统', role: '各条线人数与岗位分布', fields: ['poolDimension', 'benefitScope'], status: '新增中', color: '#f7c46a' },
+        { name: '审批流系统', role: '分摊规则审批与执行状态', fields: ['approvalStatus', 'poolRuleCode'], status: '新增中', color: '#e879f9' }
+      ]
+    }
+    const notesByScene = {
+      customer: '高净值客户礼品费、权益费、沙龙活动费，在费用申请时录入客群编码，审批通过后直接写入客户维度归集台账。',
+      product: '产品推广费、广告投放费、佣金激励，在营销管理平台登记推广计划，转化数据从广告平台API拉取后自动归集。',
+      channel: '渠道运营费按交易量、设备开机时长等驱动因子分摊，数据从核心系统和IT监控平台定期拉取。',
+      public: '总行/分行公共管理费归入成本池，按收入贡献或网点数量等维度分层分摊，审批通过后生效。'
+    }
+    return {
+      title: `${sceneLabel} - 外部系统数据接入`,
+      systems: systemsByScene[scene] || systemsByScene.customer,
+      note: notesByScene[scene] || notesByScene.customer
     }
   } else if (m === 'service') {
-    return {
-      title: '外部系统数据接入',
-      systems: [
-        { name: 'CRM系统', role: '工时登记与管户关系数据', fields: ['documentNo', 'serverStaff', 'workHours', 'workHourRatio'], status: '已对接', color: '#55c8ff' },
+    const systemsByScene = {
+      customer: [
+        { name: 'CRM系统', role: '客户经理工时登记与管户关系', fields: ['serverStaff', 'workHours', 'workHourRatio'], status: '已对接', color: '#55c8ff' },
         { name: '人力资源系统', role: '岗位-条线映射与人员归属', fields: ['serverStaff', 'benefitOrgs'], status: '已对接', color: '#49dcb1' },
-        { name: '产品管理系统', role: '产品经理支持产品列表', fields: ['benefitProducts'], status: '新增中', color: '#f7c46a' },
-        { name: '管理会计平台', role: '服务关系自动计算与台账写入', fields: ['workHourRatio', 'serviceTargetCode'], status: '新增中', color: '#e879f9' }
+        { name: '权益平台', role: '客户权益领取与客群关联', fields: ['serviceTargetCode', 'serviceAction'], status: '改造中', color: '#f7c46a' },
+        { name: '管理会计平台', role: '工时占比计算与台账写入', fields: ['workHourRatio', 'serviceTargetCode'], status: '新增中', color: '#e879f9' }
       ],
-      note: '人力系统提供岗位-条线映射，CRM提供管户关系，工时占比由系统自动计算后写入服务关系台账。'
+      product: [
+        { name: 'CRM系统', role: '产品经理支持工时登记', fields: ['serverStaff', 'workHours', 'workHourRatio'], status: '已对接', color: '#55c8ff' },
+        { name: '产品管理系统', role: '产品经理支持产品列表', fields: ['benefitProducts', 'serverStaff'], status: '新增中', color: '#f7c46a' },
+        { name: '人力资源系统', role: '岗位-产品归属映射', fields: ['serverStaff', 'benefitProducts'], status: '已对接', color: '#49dcb1' },
+        { name: '管理会计平台', role: '服务关系计算与台账写入', fields: ['workHourRatio', 'serviceTargetCode'], status: '新增中', color: '#e879f9' }
+      ],
+      channel: [
+        { name: 'CRM系统', role: '渠道运营人员工时登记', fields: ['serverStaff', 'workHours', 'workHourRatio'], status: '已对接', color: '#55c8ff' },
+        { name: 'IT监控系统', role: '自助设备运维工时记录', fields: ['serverStaff', 'driverValue'], status: '改造中', color: '#49dcb1' },
+        { name: '资产管理系统', role: '设备台账与维护工时', fields: ['benefitCode', 'workHourRatio'], status: '改造中', color: '#f7c46a' },
+        { name: '管理会计平台', role: '工时占比计算与台账写入', fields: ['workHourRatio', 'serviceTargetCode'], status: '新增中', color: '#e879f9' }
+      ],
+      public: [
+        { name: '人力资源系统', role: '各条线公共支撑工时登记', fields: ['serverStaff', 'workHours', 'workHourRatio'], status: '新增中', color: '#49dcb1' },
+        { name: '财务系统', role: '公共管理费用与人力成本关联', fields: ['costSubject', 'trialAmount'], status: '已对接', color: '#55c8ff' },
+        { name: '审批流系统', role: '公共成本分配审批', fields: ['approvalStatus', 'poolRuleCode'], status: '新增中', color: '#f7c46a' },
+        { name: '管理会计平台', role: '管理支撑服务关系计算', fields: ['workHourRatio', 'serviceTargetCode'], status: '新增中', color: '#e879f9' }
+      ]
+    }
+    const notesByScene = {
+      customer: '客户经理管户工时按AUM占比归集至客群，服务关系在CRM系统登记后自动写入服务关系台账。',
+      product: '产品经理支持各产品的工时占比由系统自动计算，按受益产品分摊人力成本。',
+      channel: '渠道运营人员工时按服务各渠道的实际工时占比分配，IT设备运维工时单独归集。',
+      public: '总行/分行公共支撑工时按岗位和人数比例分配至各受益条线，需审批确认后方可生效。'
+    }
+    return {
+      title: `${sceneLabel} - 外部系统数据接入`,
+      systems: systemsByScene[scene] || systemsByScene.customer,
+      note: notesByScene[scene] || notesByScene.customer
     }
   } else if (m === 'driver') {
-    return {
-      title: '外部系统数据接入',
-      systems: [
-        { name: '核心业务系统', role: '交易量/客户数/资产数据', fields: ['driverValue', 'ratio'], status: '已对接', color: '#55c8ff' },
-        { name: 'IT监控系统', role: '设备台数与开机时长日志', fields: ['driverValue', 'benefitCode'], status: '已对接', color: '#49dcb1' },
-        { name: '财务系统', role: '成本科目与原始发生额', fields: ['costSubject', 'dataSource'], status: '已对接', color: '#f7c46a' },
-        { name: '资产管理系统', role: '网点面积与设备台账', fields: ['benefitType', 'benefitCode'], status: '改造中', color: '#e879f9' }
+    const systemsByScene = {
+      customer: [
+        { name: '核心业务系统', role: '活跃客户数与客户分层数据', fields: ['driverValue', 'ratio'], status: '已对接', color: '#55c8ff' },
+        { name: 'CRM系统', role: '客户经理管户AUM数据', fields: ['driverValue', 'benefitCode'], status: '已对接', color: '#49dcb1' },
+        { name: '权益平台', role: '客户权益领取活跃度', fields: ['driverValue', 'ratio'], status: '改造中', color: '#f7c46a' },
+        { name: '财务系统', role: '客户经营费用原始发生额', fields: ['costSubject', 'dataSource'], status: '已对接', color: '#e879f9' }
       ],
-      note: '驱动因子由各业务系统按采集频率（日/月）推送至管理会计平台，平台按受益对象实际消耗量执行分摊计算。'
+      product: [
+        { name: 'CRM系统', role: '授信转化客户数与转化线索', fields: ['driverValue', 'ratio'], status: '已对接', color: '#55c8ff' },
+        { name: '数字营销平台', role: '广告投放转化率数据', fields: ['driverValue', 'benefitCode'], status: '改造中', color: '#49dcb1' },
+        { name: '核心业务系统', role: '产品销售额与客户数', fields: ['driverValue', 'ratio'], status: '已对接', color: '#f7c46a' },
+        { name: '财务系统', role: '产品推广费用原始发生额', fields: ['costSubject', 'dataSource'], status: '已对接', color: '#e879f9' }
+      ],
+      channel: [
+        { name: '核心业务系统', role: '各渠道交易笔数/金额', fields: ['driverValue', 'ratio'], status: '已对接', color: '#55c8ff' },
+        { name: 'IT监控系统', role: '设备开机时长与系统调用量', fields: ['driverValue', 'benefitCode'], status: '已对接', color: '#49dcb1' },
+        { name: '资产管理系统', role: '网点面积与设备台数', fields: ['benefitType', 'benefitCode'], status: '改造中', color: '#f7c46a' },
+        { name: '财务系统', role: '渠道运营费原始发生额', fields: ['costSubject', 'dataSource'], status: '已对接', color: '#e879f9' }
+      ],
+      public: [
+        { name: '人力资源系统', role: '各条线工时记录与人力成本', fields: ['driverValue', 'ratio'], status: '新增中', color: '#49dcb1' },
+        { name: '资产管理系统', role: '各机构面积与设备分布', fields: ['driverValue', 'benefitCode'], status: '改造中', color: '#55c8ff' },
+        { name: '核心业务系统', role: '各分行收入贡献比例', fields: ['ratio', 'poolDimension'], status: '已对接', color: '#f7c46a' },
+        { name: '财务系统', role: '公共管理费用原始发生额', fields: ['costSubject', 'trialAmount'], status: '已对接', color: '#e879f9' }
+      ]
+    }
+    const notesByScene = {
+      customer: '按活跃客户数将客户经营成本分摊至各客群，活跃度数据从核心系统和CRM系统拉取。',
+      product: '按授信转化客户数将产品推广成本分摊至各产品，转化数据从CRM和数字营销平台拉取。',
+      channel: '按交易量、设备开机时长等驱动因子将渠道运营成本分摊至各受益渠道。',
+      public: '按工时占比、面积、人数等驱动因子将公共管理成本分配至各条线/机构。'
+    }
+    return {
+      title: `${sceneLabel} - 外部系统数据接入`,
+      systems: systemsByScene[scene] || systemsByScene.customer,
+      note: notesByScene[scene] || notesByScene.customer
     }
   } else {
-    return {
-      title: '外部系统数据接入',
-      systems: [
-        { name: '财务系统', role: '公共费用原始数据与成本性质', fields: ['documentNo', 'costSubject', 'trialAmount', 'poolNature'], status: '已对接', color: '#49dcb1' },
-        { name: '核心业务系统', role: '各分行收入贡献比例计算', fields: ['benefitScope', 'poolDimension'], status: '已对接', color: '#55c8ff' },
-        { name: '审批流系统', role: '分摊规则审批与执行状态', fields: ['approvalStatus', 'poolRuleCode'], status: '新增中', color: '#f7c46a' },
-        { name: '管理会计平台', role: '成本池层级配置与分摊规则引擎', fields: ['poolLevel', 'poolRuleCode'], status: '新增中', color: '#e879f9' }
+    const systemsByScene = {
+      customer: [
+        { name: '财务系统', role: '客户经营相关公共费用汇总', fields: ['documentNo', 'costSubject', 'trialAmount'], status: '已对接', color: '#49dcb1' },
+        { name: '核心业务系统', role: '各客群收入贡献比例计算', fields: ['benefitScope', 'poolDimension'], status: '已对接', color: '#55c8ff' },
+        { name: 'CRM系统', role: '客群AUM与客户数分布', fields: ['benefitScope', 'ratio'], status: '改造中', color: '#f7c46a' },
+        { name: '审批流系统', role: '客户经营支撑费用分配审批', fields: ['approvalStatus', 'poolRuleCode'], status: '新增中', color: '#e879f9' }
       ],
-      note: '公共成本池数据由财务系统按月汇总，规则引擎根据配置执行分层分摊，审批通过后方可生效写入台账。'
+      product: [
+        { name: '财务系统', role: '产品推广相关公共费用汇总', fields: ['documentNo', 'costSubject', 'trialAmount'], status: '已对接', color: '#49dcb1' },
+        { name: '核心业务系统', role: '各产品线收入贡献比例', fields: ['benefitScope', 'poolDimension'], status: '已对接', color: '#55c8ff' },
+        { name: '产品管理系统', role: '产品-条线映射关系', fields: ['benefitScope', 'poolRuleCode'], status: '改造中', color: '#f7c46a' },
+        { name: '审批流系统', role: '产品推广支撑费用分配审批', fields: ['approvalStatus', 'poolRuleCode'], status: '新增中', color: '#e879f9' }
+      ],
+      channel: [
+        { name: '财务系统', role: '渠道运营公共费用汇总', fields: ['documentNo', 'costSubject', 'trialAmount'], status: '已对接', color: '#49dcb1' },
+        { name: '资产管理系统', role: '各渠道网点面积与设备分布', fields: ['benefitScope', 'poolDimension'], status: '改造中', color: '#55c8ff' },
+        { name: 'IT监控系统', role: '系统调用量分布比例', fields: ['benefitScope', 'ratio'], status: '已对接', color: '#f7c46a' },
+        { name: '审批流系统', role: '渠道公共费用分配审批', fields: ['approvalStatus', 'poolRuleCode'], status: '新增中', color: '#e879f9' }
+      ],
+      public: [
+        { name: '财务系统', role: '总行/分行公共管理费用原始台账', fields: ['documentNo', 'costSubject', 'trialAmount', 'poolNature'], status: '已对接', color: '#49dcb1' },
+        { name: '核心业务系统', role: '各分行收入贡献比例计算', fields: ['benefitScope', 'poolDimension'], status: '已对接', color: '#55c8ff' },
+        { name: '人力资源系统', role: '各机构人数与岗位分布', fields: ['poolDimension', 'benefitScope'], status: '新增中', color: '#f7c46a' },
+        { name: '审批流系统', role: '公共成本池分摊规则审批与执行状态', fields: ['approvalStatus', 'poolRuleCode'], status: '新增中', color: '#e879f9' }
+      ]
+    }
+    const notesByScene = {
+      customer: '客户经营相关的公共支撑费用按客群收入贡献比例分配至各客群成本，审批通过后生效。',
+      product: '产品推广相关的公共支撑费用按产品线收入贡献比例分配至各产品，审批通过后生效。',
+      channel: '渠道运营公共费用按网点数量、面积、业务量等维度分配至各渠道，审批通过后生效。',
+      public: '公共管理费用按总行→分行→条线逐层分配，审批流从分行财务经理到总行运营部，确认后生效。'
+    }
+    return {
+      title: `${sceneLabel} - 外部系统数据接入`,
+      systems: systemsByScene[scene] || systemsByScene.customer,
+      note: notesByScene[scene] || notesByScene.customer
     }
   }
 })
@@ -244,7 +352,7 @@ function clearLogs() {
 }
 
 // ============================================================
-// 加载示例数据：将外部系统数据回填到表单
+// 自动同步：当场景或方法切换时，更新表单数据
 // ============================================================
 function applySceneData() {
   const s = props.scenes[props.activeScene]
@@ -347,6 +455,15 @@ function applySceneData() {
     })
   }
 }
+
+// 场景或方法切换时，自动更新表单数据
+watch(
+  [() => props.activeScene, () => props.activeMethod],
+  () => {
+    applySceneData()
+  },
+  { immediate: true }
+)
 </script>
 
 <template>

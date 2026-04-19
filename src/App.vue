@@ -177,13 +177,13 @@ const scenes = {
     channel: '手机银行 / 财富中心',
     manager: '客户经理张岚',
     costType: '客户经营费（礼品/权益/沙龙）',
-    amount: 286000,
+    amount: 186000,
     method: '第一分法（直连）+ 第二分法（服务关系）',
     methodDetail: {
-      direct: { rule: 'FR-D001 客户直归法', ratio: 32, amount: 91520, target: 'A03财富客群' },
-      service: { rule: 'FR-S001 客户贡献度归集法', ratio: 36, amount: 102960, target: '高净值客户管户' },
-      driver: { rule: 'FR-V003 客户活跃度分摊法', ratio: 22, amount: 62920, target: '活跃客户数' },
-      pool: { rule: '公共成本池', ratio: 10, amount: 28600, target: '总行管理支撑' }
+      direct: { rule: 'FR-D001 客户直归法', ratio: 35, amount: 65100, target: 'A03财富客群' },
+      service: { rule: 'FR-S001 客户贡献度归集法', ratio: 38, amount: 70680, target: '高净值客户管户' },
+      driver: { rule: 'FR-V003 客户活跃度分摊法', ratio: 18, amount: 33480, target: '活跃客户数' },
+      pool: { rule: '公共成本池', ratio: 9, amount: 16740, target: '总行管理支撑' }
     },
     businessFlow: [
       { step: '费用申请', action: '在费用申请页录入：客群编码（A03）、产品编码、渠道标识、是否直归', system: '费用报销系统' },
@@ -191,7 +191,7 @@ const scenes = {
       { step: '权益发放记录', action: '从权益平台拉取客户领取记录，自动归集到客群', system: '权益平台（改造）' },
       { step: '沙龙活动登记', action: '录入活动编号、参会客户名单、受邀客群', system: '营销管理平台（改造）' }
     ],
-    roi: { revenue: 512000, cost: 286000, roi: 1.79, suggestion: '加大AUM≥600万客群投入，ROI已达1.79' }
+    roi: { revenue: 357000, cost: 186000, roi: 1.92, suggestion: '加大AUM≥600万客群投入，ROI已达1.92' }
   },
   product: {
     label: '产品销售推动',
@@ -201,13 +201,13 @@ const scenes = {
     channel: '企业网银 / 客户经理直销',
     manager: '产品经理李峻 / 客户经理王强',
     costType: '产品推广费（广告投放/佣金/激励）',
-    amount: 418000,
+    amount: 528000,
     method: '第一分法（直连）+ 第三分法（驱动因子）',
     methodDetail: {
-      direct: { rule: 'FR-D002 产品直归法', ratio: 33, amount: 137940, target: '普惠经营贷' },
-      service: { rule: 'FR-S002 产品经理工时归集法', ratio: 25, amount: 104500, target: '产品经理支持' },
-      driver: { rule: 'FR-V001 授信转化分摊法', ratio: 30, amount: 125400, target: '授信转化客户数' },
-      pool: { rule: '公共成本池', ratio: 12, amount: 50160, target: '产品管理支撑' }
+      direct: { rule: 'FR-D002 产品直归法', ratio: 30, amount: 158400, target: '普惠经营贷' },
+      service: { rule: 'FR-S002 产品经理工时归集法', ratio: 22, amount: 116160, target: '产品经理支持' },
+      driver: { rule: 'FR-V001 授信转化分摊法', ratio: 35, amount: 184800, target: '授信转化客户数' },
+      pool: { rule: '公共成本池', ratio: 13, amount: 68640, target: '产品管理支撑' }
     },
     businessFlow: [
       { step: '产品推广计划申请', action: '在营销管理页录入：产品编码、推广渠道、目标客群、预算金额', system: '营销管理系统（改造）' },
@@ -215,7 +215,7 @@ const scenes = {
       { step: '转化线索归集', action: '从广告平台API拉取转化客户数、产品咨询量', system: '广告平台（对接）' },
       { step: '佣金激励发放', action: '录入受益产品、客户经理、产品编码', system: '费用报销系统（改造）' }
     ],
-    roi: { revenue: 698000, cost: 418000, roi: 1.67, suggestion: '企业网银渠道ROI偏低，建议优化渠道配置' }
+    roi: { revenue: 814000, cost: 528000, roi: 1.54, suggestion: '企业网银渠道ROI偏低，建议优化渠道配置' }
   },
   channel: {
     label: '渠道运营支撑',
@@ -225,13 +225,13 @@ const scenes = {
     channel: '手机银行 / 网上银行 / 营业网点 / 客服中心',
     manager: '渠道运营部 / 各渠道负责人',
     costType: '渠道运营费（设备/人力/场地/通信）',
-    amount: 562000,
+    amount: 342000,
     method: '第三分法（驱动因子）+ 第四分法（公共池）',
     methodDetail: {
-      direct: { rule: 'FR-D003 渠道专属成本直归', ratio: 15, amount: 84300, target: '网点专属设备' },
-      service: { rule: 'FR-S003 渠道服务关系归集法', ratio: 20, amount: 112400, target: '渠道服务工时' },
-      driver: { rule: 'FR-V002 渠道交易量分摊法', ratio: 45, amount: 252900, target: '交易笔数/金额' },
-      pool: { rule: '公共成本池', ratio: 20, amount: 112400, target: '渠道公共支撑' }
+      direct: { rule: 'FR-D003 渠道专属成本直归', ratio: 18, amount: 61560, target: '网点专属设备' },
+      service: { rule: 'FR-S003 渠道服务关系归集法', ratio: 25, amount: 85500, target: '渠道服务工时' },
+      driver: { rule: 'FR-V002 渠道交易量分摊法', ratio: 42, amount: 143640, target: '交易笔数/金额' },
+      pool: { rule: '公共成本池', ratio: 15, amount: 51300, target: '渠道公共支撑' }
     },
     businessFlow: [
       { step: '渠道资源消耗登记', action: '登记各渠道设备台数、场地面积、人员工时', system: '资产管理系统（改造）' },
@@ -239,7 +239,7 @@ const scenes = {
       { step: '系统调用量采集', action: '从IT监控平台拉取各渠道系统调用量、负载量', system: 'IT监控系统（对接）' },
       { step: '渠道成本汇总', action: '按交易量/客户数/使用量汇总渠道分摊结果', system: '管理会计平台（改造）' }
     ],
-    roi: { revenue: 1240000, cost: 562000, roi: 2.21, suggestion: '手机银行渠道ROI最优，建议加大数字化投入' }
+    roi: { revenue: 791000, cost: 342000, roi: 2.31, suggestion: '手机银行渠道ROI最优，建议加大数字化投入' }
   },
   public: {
     label: '公共管理支撑',
@@ -249,13 +249,13 @@ const scenes = {
     channel: '全渠道',
     manager: '总行运营管理部 / 各分行综合部',
     costType: '公共管理费（人力/场地/合规/品牌）',
-    amount: 980000,
+    amount: 1150000,
     method: '第四分法（公共成本池分层分摊）',
     methodDetail: {
-      direct: { rule: '公共成本直归', ratio: 5, amount: 49000, target: '可直接归属的公共费' },
-      service: { rule: 'FR-S004 管理支撑服务归集法', ratio: 15, amount: 147000, target: '各条线管理支撑' },
-      driver: { rule: 'FR-V004 公共资源驱动分摊法', ratio: 30, amount: 294000, target: '面积/人数/收入' },
-      pool: { rule: '公共成本池（分层）', ratio: 50, amount: 490000, target: '总行→分行→条线逐级分配' }
+      direct: { rule: '公共成本直归', ratio: 5, amount: 57500, target: '可直接归属的公共费' },
+      service: { rule: 'FR-S004 管理支撑服务归集法', ratio: 18, amount: 207000, target: '各条线管理支撑' },
+      driver: { rule: 'FR-V004 公共资源驱动分摊法', ratio: 32, amount: 368000, target: '面积/人数/收入' },
+      pool: { rule: '公共成本池（分层）', ratio: 45, amount: 517500, target: '总行→分行→条线逐级分配' }
     },
     businessFlow: [
       { step: '公共费用归集', action: '在财务系统归集总行/分行公共管理费用', system: '财务系统' },
@@ -263,7 +263,7 @@ const scenes = {
       { step: '分摊规则配置', action: '配置各层级的分摊维度、规则、受益范围', system: '管理会计平台（新增）' },
       { step: '试算与审批', action: '执行分摊试算，差异分析，提交审批', system: '管理会计平台（新增）' }
     ],
-    roi: { revenue: 0, cost: 980000, roi: 0, suggestion: '公共成本需通过经营分析间接评估价值贡献' }
+    roi: { revenue: 0, cost: 1150000, roi: 0, suggestion: '公共成本需通过经营分析间接评估价值贡献' }
   }
 }
 
@@ -321,30 +321,30 @@ const ruleGroups = [
 // 试算追踪数据
 // ============================================================
 const allocationSteps = [
-  { step: '01 原始费用入账', amount: 286000, desc: '客户沙龙活动及礼遇费用原始发生', rule: '无（原始入账）' },
-  { step: '02 直接归集识别', amount: 91520, desc: '可直连A03财富客群的高净值礼品费', rule: 'FR-D001 客户直归法' },
-  { step: '03 服务关系归集', amount: 102960, desc: '客户经理张岚管户工时归集至A03客群', rule: 'FR-S001 客户贡献度归集法' },
-  { step: '04 驱动因子分摊', amount: 62920, desc: '按活跃客户数将运营看板费用分摊至客群', rule: 'FR-V003 客户活跃度分摊法' },
-  { step: '05 公共池分配', amount: 28600, desc: '管理支撑费用按比例分配至客群成本', rule: 'FR-P001 总行管理费分配规则' }
+  { step: '01 原始费用入账', amount: 186000, desc: '客户沙龙活动及礼遇费用原始发生', rule: '无（原始入账）' },
+  { step: '02 直接归集识别', amount: 65100, desc: '可直连A03财富客群的高净值礼品费', rule: 'FR-D001 客户直归法' },
+  { step: '03 服务关系归集', amount: 70680, desc: '客户经理张岚管户工时归集至A03客群', rule: 'FR-S001 客户贡献度归集法' },
+  { step: '04 驱动因子分摊', amount: 33480, desc: '按活跃客户数将运营看板费用分摊至客群', rule: 'FR-V003 客户活跃度分摊法' },
+  { step: '05 公共池分配', amount: 16740, desc: '管理支撑费用按比例分配至客群成本', rule: 'FR-P001 总行管理费分配规则' }
 ]
 
 const traceRows = [
-  ['费用入账', '客户沙龙活动', '原始金额', 286000, '费用报销系统', '已入账'],
-  ['直归判定', 'A03财富客群', 'FR-D001', 91520, '归集台账-客户维', '已归集'],
-  ['服务归集', '高净值客户管户', 'FR-S001', 102960, '归集台账-客群维', '已归集'],
-  ['驱动分摊', '活跃客户数驱动', 'FR-V003', 62920, '归集台账-驱动维', '已分摊'],
-  ['公共池分配', '总行管理费池', 'FR-P001', 28600, '归集台账-公共池', '待审批']
+  ['费用入账', '客户沙龙活动', '原始金额', 186000, '费用报销系统', '已入账'],
+  ['直归判定', 'A03财富客群', 'FR-D001', 65100, '归集台账-客户维', '已归集'],
+  ['服务归集', '高净值客户管户', 'FR-S001', 70680, '归集台账-客群维', '已归集'],
+  ['驱动分摊', '活跃客户数驱动', 'FR-V003', 33480, '归集台账-驱动维', '已分摊'],
+  ['公共池分配', '总行管理费池', 'FR-P001', 16740, '归集台账-公共池', '待审批']
 ]
 
 // ============================================================
 // ROI分析数据
 // ============================================================
 const productRows = [
-  { name: '稳利盈6M理财', type: '财富产品', clients: 126, revenue: 512000, cost: 286000, roi: 1.79, status: '投入产出优', suggestion: '维持投入规模' },
-  { name: '普惠经营贷', type: '对公贷款', clients: 84, revenue: 698000, cost: 418000, roi: 1.67, status: '渠道待优化', suggestion: '优化企业网银渠道配置' },
-  { name: '白鹭信用卡（新客礼遇）', type: '信用卡', clients: 214, revenue: 356000, cost: 182000, roi: 1.96, status: '获客效率优', suggestion: '加大线上获客投入' },
-  { name: '手机银行运营费', type: '渠道运营', clients: 286000, revenue: 892000, cost: 312000, roi: 2.86, status: '渠道ROI最优', suggestion: '数字化投入可加大' },
-  { name: '高净值客群经营', type: '客户经营', clients: 328, revenue: 1240000, cost: 586000, roi: 2.12, status: '客群价值高', suggestion: '重点加大AUM≥600万客群' }
+  { name: '稳利盈6M理财', type: '财富产品', clients: 126, revenue: 357000, cost: 186000, roi: 1.92, status: '投入产出优', suggestion: '维持投入规模' },
+  { name: '普惠经营贷', type: '对公贷款', clients: 84, revenue: 814000, cost: 528000, roi: 1.54, status: '渠道待优化', suggestion: '优化企业网银渠道配置' },
+  { name: '白鹭信用卡（新客礼遇）', type: '信用卡', clients: 214, revenue: 628000, cost: 295000, roi: 2.13, status: '获客效率优', suggestion: '加大线上获客投入' },
+  { name: '手机银行运营费', type: '渠道运营', clients: 342000, revenue: 791000, cost: 342000, roi: 2.31, status: '渠道ROI最优', suggestion: '数字化投入可加大' },
+  { name: '高净值客群经营', type: '客户经营', clients: 328, revenue: 1650000, cost: 762000, roi: 2.17, status: '客群价值高', suggestion: '重点加大AUM≥600万客群' }
 ]
 
 const roiSummary = [
@@ -428,10 +428,6 @@ function openPeriodModal() { showPeriodModal.value = true }
 function selectPeriod(val) {
   activePeriod.value = val
   showPeriodModal.value = false
-  // 模拟自动化跑批
-  if (val === 'daily-auto') {
-    startAutoRun()
-  }
 }
 
 // 自动化跑批模拟状态
@@ -494,52 +490,52 @@ function resetAutoRun() {
 // 各场景数据按周期变化
 const periodData = {
   '2026Q1': {
-    customer: { amount: 286000, roi: 1.79, methodDetail: { direct: { ratio: 32, amount: 91520 }, service: { ratio: 36, amount: 102960 }, driver: { ratio: 22, amount: 62920 }, pool: { ratio: 10, amount: 28600 } } },
-    product: { amount: 418000, roi: 1.67, methodDetail: { direct: { ratio: 33, amount: 137940 }, service: { ratio: 25, amount: 104500 }, driver: { ratio: 30, amount: 125400 }, pool: { ratio: 12, amount: 50160 } } },
-    channel: { amount: 562000, roi: 2.21, methodDetail: { direct: { ratio: 15, amount: 84300 }, service: { ratio: 20, amount: 112400 }, driver: { ratio: 45, amount: 252900 }, pool: { ratio: 20, amount: 112400 } } },
-    public: { amount: 980000, roi: 0, methodDetail: { direct: { ratio: 5, amount: 49000 }, service: { ratio: 15, amount: 147000 }, driver: { ratio: 30, amount: 294000 }, pool: { ratio: 50, amount: 490000 } } }
+    customer: { amount: 186000, roi: 1.92, methodDetail: { direct: { ratio: 35, amount: 65100 }, service: { ratio: 38, amount: 70680 }, driver: { ratio: 18, amount: 33480 }, pool: { ratio: 9, amount: 16740 } } },
+    product: { amount: 528000, roi: 1.54, methodDetail: { direct: { ratio: 30, amount: 158400 }, service: { ratio: 22, amount: 116160 }, driver: { ratio: 35, amount: 184800 }, pool: { ratio: 13, amount: 68640 } } },
+    channel: { amount: 342000, roi: 2.31, methodDetail: { direct: { ratio: 18, amount: 61560 }, service: { ratio: 25, amount: 85500 }, driver: { ratio: 42, amount: 143640 }, pool: { ratio: 15, amount: 51300 } } },
+    public: { amount: 1150000, roi: 0, methodDetail: { direct: { ratio: 5, amount: 57500 }, service: { ratio: 18, amount: 207000 }, driver: { ratio: 32, amount: 368000 }, pool: { ratio: 45, amount: 517500 } } }
   },
   '2025Q4': {
-    customer: { amount: 243000, roi: 1.65, methodDetail: { direct: { ratio: 30, amount: 72900 }, service: { ratio: 35, amount: 85050 }, driver: { ratio: 23, amount: 55890 }, pool: { ratio: 12, amount: 29160 } } },
-    product: { amount: 376000, roi: 1.52, methodDetail: { direct: { ratio: 32, amount: 120320 }, service: { ratio: 26, amount: 97760 }, driver: { ratio: 28, amount: 105280 }, pool: { ratio: 14, amount: 52640 } } },
-    channel: { amount: 498000, roi: 2.05, methodDetail: { direct: { ratio: 14, amount: 69720 }, service: { ratio: 18, amount: 89640 }, driver: { ratio: 47, amount: 234060 }, pool: { ratio: 21, amount: 104580 } } },
-    public: { amount: 892000, roi: 0, methodDetail: { direct: { ratio: 6, amount: 53520 }, service: { ratio: 14, amount: 124880 }, driver: { ratio: 28, amount: 249760 }, pool: { ratio: 52, amount: 463840 } } }
+    customer: { amount: 158000, roi: 1.84, methodDetail: { direct: { ratio: 34, amount: 53720 }, service: { ratio: 37, amount: 58460 }, driver: { ratio: 19, amount: 30020 }, pool: { ratio: 10, amount: 15800 } } },
+    product: { amount: 462000, roi: 1.48, methodDetail: { direct: { ratio: 29, amount: 133980 }, service: { ratio: 23, amount: 106260 }, driver: { ratio: 34, amount: 157080 }, pool: { ratio: 14, amount: 64680 } } },
+    channel: { amount: 298000, roi: 2.18, methodDetail: { direct: { ratio: 17, amount: 50660 }, service: { ratio: 24, amount: 71520 }, driver: { ratio: 43, amount: 128140 }, pool: { ratio: 16, amount: 47680 } } },
+    public: { amount: 1030000, roi: 0, methodDetail: { direct: { ratio: 5, amount: 51500 }, service: { ratio: 17, amount: 175100 }, driver: { ratio: 33, amount: 339900 }, pool: { ratio: 45, amount: 463500 } } }
   },
   '2025Q3': {
-    customer: { amount: 218000, roi: 1.58, methodDetail: { direct: { ratio: 29, amount: 63220 }, service: { ratio: 34, amount: 74120 }, driver: { ratio: 24, amount: 52320 }, pool: { ratio: 13, amount: 28340 } } },
-    product: { amount: 342000, roi: 1.48, methodDetail: { direct: { ratio: 31, amount: 106020 }, service: { ratio: 27, amount: 92340 }, driver: { ratio: 27, amount: 92340 }, pool: { ratio: 15, amount: 51300 } } },
-    channel: { amount: 456000, roi: 1.98, methodDetail: { direct: { ratio: 13, amount: 59280 }, service: { ratio: 19, amount: 86640 }, driver: { ratio: 46, amount: 209760 }, pool: { ratio: 22, amount: 100320 } } },
-    public: { amount: 814000, roi: 0, methodDetail: { direct: { ratio: 5, amount: 40700 }, service: { ratio: 13, amount: 105820 }, driver: { ratio: 29, amount: 236060 }, pool: { ratio: 53, amount: 431420 } } }
+    customer: { amount: 142000, roi: 1.76, methodDetail: { direct: { ratio: 33, amount: 46860 }, service: { ratio: 36, amount: 51120 }, driver: { ratio: 20, amount: 28400 }, pool: { ratio: 11, amount: 15620 } } },
+    product: { amount: 396000, roi: 1.41, methodDetail: { direct: { ratio: 28, amount: 110880 }, service: { ratio: 24, amount: 95040 }, driver: { ratio: 34, amount: 134640 }, pool: { ratio: 14, amount: 55440 } } },
+    channel: { amount: 276000, roi: 2.05, methodDetail: { direct: { ratio: 16, amount: 44160 }, service: { ratio: 23, amount: 63480 }, driver: { ratio: 44, amount: 121440 }, pool: { ratio: 17, amount: 46920 } } },
+    public: { amount: 926000, roi: 0, methodDetail: { direct: { ratio: 6, amount: 55560 }, service: { ratio: 16, amount: 148160 }, driver: { ratio: 33, amount: 305580 }, pool: { ratio: 45, amount: 416700 } } }
   },
   '2025H1': {
-    customer: { amount: 412000, roi: 1.62, methodDetail: { direct: { ratio: 30, amount: 123600 }, service: { ratio: 35, amount: 144200 }, driver: { ratio: 23, amount: 94760 }, pool: { ratio: 12, amount: 49440 } } },
-    product: { amount: 628000, roi: 1.55, methodDetail: { direct: { ratio: 32, amount: 200960 }, service: { ratio: 26, amount: 163280 }, driver: { ratio: 28, amount: 175840 }, pool: { ratio: 14, amount: 87920 } } },
-    channel: { amount: 856000, roi: 2.00, methodDetail: { direct: { ratio: 14, amount: 119840 }, service: { ratio: 18, amount: 154080 }, driver: { ratio: 47, amount: 402320 }, pool: { ratio: 21, amount: 179760 } } },
-    public: { amount: 1628000, roi: 0, methodDetail: { direct: { ratio: 6, amount: 97680 }, service: { ratio: 14, amount: 227920 }, driver: { ratio: 28, amount: 455840 }, pool: { ratio: 52, amount: 846560 } } }
+    customer: { amount: 468000, roi: 1.88, methodDetail: { direct: { ratio: 34, amount: 159120 }, service: { ratio: 37, amount: 173160 }, driver: { ratio: 19, amount: 88920 }, pool: { ratio: 10, amount: 46800 } } },
+    product: { amount: 718000, roi: 1.45, methodDetail: { direct: { ratio: 29, amount: 208220 }, service: { ratio: 23, amount: 165140 }, driver: { ratio: 34, amount: 244120 }, pool: { ratio: 14, amount: 100520 } } },
+    channel: { amount: 986000, roi: 2.12, methodDetail: { direct: { ratio: 17, amount: 167620 }, service: { ratio: 24, amount: 236640 }, driver: { ratio: 43, amount: 423980 }, pool: { ratio: 16, amount: 157760 } } },
+    public: { amount: 1856000, roi: 0, methodDetail: { direct: { ratio: 5, amount: 92800 }, service: { ratio: 17, amount: 315520 }, driver: { ratio: 33, amount: 612480 }, pool: { ratio: 45, amount: 835200 } } }
   },
   '2024FY': {
-    customer: { amount: 968000, roi: 1.58, methodDetail: { direct: { ratio: 30, amount: 290400 }, service: { ratio: 35, amount: 338800 }, driver: { ratio: 23, amount: 222640 }, pool: { ratio: 12, amount: 116160 } } },
-    product: { amount: 1426000, roi: 1.51, methodDetail: { direct: { ratio: 32, amount: 456320 }, service: { ratio: 26, amount: 370760 }, driver: { ratio: 28, amount: 399280 }, pool: { ratio: 14, amount: 199640 } } },
-    channel: { amount: 1986000, roi: 1.95, methodDetail: { direct: { ratio: 14, amount: 278040 }, service: { ratio: 18, amount: 357480 }, driver: { ratio: 47, amount: 933420 }, pool: { ratio: 21, amount: 417060 } } },
-    public: { amount: 3824000, roi: 0, methodDetail: { direct: { ratio: 6, amount: 229440 }, service: { ratio: 14, amount: 535360 }, driver: { ratio: 28, amount: 1070720 }, pool: { ratio: 52, amount: 1988480 } } }
+    customer: { amount: 1102000, roi: 1.82, methodDetail: { direct: { ratio: 34, amount: 374680 }, service: { ratio: 37, amount: 407740 }, driver: { ratio: 19, amount: 209380 }, pool: { ratio: 10, amount: 110200 } } },
+    product: { amount: 1628000, roi: 1.39, methodDetail: { direct: { ratio: 29, amount: 472120 }, service: { ratio: 23, amount: 374440 }, driver: { ratio: 34, amount: 553520 }, pool: { ratio: 14, amount: 227920 } } },
+    channel: { amount: 2268000, roi: 2.05, methodDetail: { direct: { ratio: 17, amount: 385560 }, service: { ratio: 24, amount: 544320 }, driver: { ratio: 43, amount: 975240 }, pool: { ratio: 16, amount: 362880 } } },
+    public: { amount: 4356000, roi: 0, methodDetail: { direct: { ratio: 5, amount: 217800 }, service: { ratio: 17, amount: 740520 }, driver: { ratio: 33, amount: 1437480 }, pool: { ratio: 45, amount: 1960200 } } }
   }
 }
 
 // 动态场景数据（随周期变化）
 const dynamicScenes = computed(() => {
-  const pd = periodData[activePeriod.value]
+  const pd = periodData[activePeriod.value] || periodData['2026Q1']
   return {
-    customer: { ...scenes.customer, amount: pd.customer.amount, roi: pd.customer.roi, methodDetail: pd.customer.methodDetail },
-    product: { ...scenes.product, amount: pd.product.amount, roi: pd.product.roi, methodDetail: pd.product.methodDetail },
-    channel: { ...scenes.channel, amount: pd.channel.amount, roi: pd.channel.roi, methodDetail: pd.channel.methodDetail },
-    public: { ...scenes.public, amount: pd.public.amount, roi: pd.public.roi, methodDetail: pd.public.methodDetail }
+    customer: { ...scenes.customer, amount: pd.customer.amount, roi: { ...scenes.customer.roi, roi: pd.customer.roi }, methodDetail: pd.customer.methodDetail },
+    product: { ...scenes.product, amount: pd.product.amount, roi: { ...scenes.product.roi, roi: pd.product.roi }, methodDetail: pd.product.methodDetail },
+    channel: { ...scenes.channel, amount: pd.channel.amount, roi: { ...scenes.channel.roi, roi: pd.channel.roi }, methodDetail: pd.channel.methodDetail },
+    public: { ...scenes.public, amount: pd.public.amount, roi: { ...scenes.public.roi, roi: pd.public.roi }, methodDetail: pd.public.methodDetail }
   }
 })
 
 const methodForm = reactive({
   documentNo: 'FY-2026-0419-0086',
   costSubject: '客户经营费-沙龙活动',
-  amount: 286000,
+  amount: 186000,
   org: '九江银行南昌分行',
   line: '零售金融部',
   channel: '财富中心',
