@@ -406,6 +406,70 @@ const activePage = ref('dashboard')
 const activeScene = ref('customer')
 const activeMethod = ref('direct')
 
+// 时间周期管理
+const periodOptions = [
+  { label: '2026年一季度', value: '2026Q1', start: '2026-01-01', end: '2026-03-31', desc: '2026年Q1试算数据' },
+  { label: '2025年四季度', value: '2025Q4', start: '2025-10-01', end: '2025-12-31', desc: '2025年Q4历史数据' },
+  { label: '2025年三季度', value: '2025Q3', start: '2025-07-01', end: '2025-09-30', desc: '2025年Q3历史数据' },
+  { label: '2025年上半年', value: '2025H1', start: '2025-01-01', end: '2025-06-30', desc: '2025年H1历史数据' },
+  { label: '2024年全年', value: '2024FY', start: '2024-01-01', end: '2024-12-31', desc: '2024财年数据' },
+]
+const activePeriod = ref('2026Q1')
+const showPeriodModal = ref(false)
+const selectedPeriodOption = computed(() => periodOptions.find(p => p.value === activePeriod.value) || periodOptions[0])
+const periodRange = computed(() => `${selectedPeriodOption.value.start} ~ ${selectedPeriodOption.value.end}`)
+
+function openPeriodModal() { showPeriodModal.value = true }
+function selectPeriod(val) {
+  activePeriod.value = val
+  showPeriodModal.value = false
+}
+
+// 各场景数据按周期变化
+const periodData = {
+  '2026Q1': {
+    customer: { amount: 286000, roi: 1.79, methodDetail: { direct: { ratio: 32, amount: 91520 }, service: { ratio: 36, amount: 102960 }, driver: { ratio: 22, amount: 62920 }, pool: { ratio: 10, amount: 28600 } } },
+    product: { amount: 418000, roi: 1.67, methodDetail: { direct: { ratio: 33, amount: 137940 }, service: { ratio: 25, amount: 104500 }, driver: { ratio: 30, amount: 125400 }, pool: { ratio: 12, amount: 50160 } } },
+    channel: { amount: 562000, roi: 2.21, methodDetail: { direct: { ratio: 15, amount: 84300 }, service: { ratio: 20, amount: 112400 }, driver: { ratio: 45, amount: 252900 }, pool: { ratio: 20, amount: 112400 } } },
+    public: { amount: 980000, roi: 0, methodDetail: { direct: { ratio: 5, amount: 49000 }, service: { ratio: 15, amount: 147000 }, driver: { ratio: 30, amount: 294000 }, pool: { ratio: 50, amount: 490000 } } }
+  },
+  '2025Q4': {
+    customer: { amount: 243000, roi: 1.65, methodDetail: { direct: { ratio: 30, amount: 72900 }, service: { ratio: 35, amount: 85050 }, driver: { ratio: 23, amount: 55890 }, pool: { ratio: 12, amount: 29160 } } },
+    product: { amount: 376000, roi: 1.52, methodDetail: { direct: { ratio: 32, amount: 120320 }, service: { ratio: 26, amount: 97760 }, driver: { ratio: 28, amount: 105280 }, pool: { ratio: 14, amount: 52640 } } },
+    channel: { amount: 498000, roi: 2.05, methodDetail: { direct: { ratio: 14, amount: 69720 }, service: { ratio: 18, amount: 89640 }, driver: { ratio: 47, amount: 234060 }, pool: { ratio: 21, amount: 104580 } } },
+    public: { amount: 892000, roi: 0, methodDetail: { direct: { ratio: 6, amount: 53520 }, service: { ratio: 14, amount: 124880 }, driver: { ratio: 28, amount: 249760 }, pool: { ratio: 52, amount: 463840 } } }
+  },
+  '2025Q3': {
+    customer: { amount: 218000, roi: 1.58, methodDetail: { direct: { ratio: 29, amount: 63220 }, service: { ratio: 34, amount: 74120 }, driver: { ratio: 24, amount: 52320 }, pool: { ratio: 13, amount: 28340 } } },
+    product: { amount: 342000, roi: 1.48, methodDetail: { direct: { ratio: 31, amount: 106020 }, service: { ratio: 27, amount: 92340 }, driver: { ratio: 27, amount: 92340 }, pool: { ratio: 15, amount: 51300 } } },
+    channel: { amount: 456000, roi: 1.98, methodDetail: { direct: { ratio: 13, amount: 59280 }, service: { ratio: 19, amount: 86640 }, driver: { ratio: 46, amount: 209760 }, pool: { ratio: 22, amount: 100320 } } },
+    public: { amount: 814000, roi: 0, methodDetail: { direct: { ratio: 5, amount: 40700 }, service: { ratio: 13, amount: 105820 }, driver: { ratio: 29, amount: 236060 }, pool: { ratio: 53, amount: 431420 } } }
+  },
+  '2025H1': {
+    customer: { amount: 412000, roi: 1.62, methodDetail: { direct: { ratio: 30, amount: 123600 }, service: { ratio: 35, amount: 144200 }, driver: { ratio: 23, amount: 94760 }, pool: { ratio: 12, amount: 49440 } } },
+    product: { amount: 628000, roi: 1.55, methodDetail: { direct: { ratio: 32, amount: 200960 }, service: { ratio: 26, amount: 163280 }, driver: { ratio: 28, amount: 175840 }, pool: { ratio: 14, amount: 87920 } } },
+    channel: { amount: 856000, roi: 2.00, methodDetail: { direct: { ratio: 14, amount: 119840 }, service: { ratio: 18, amount: 154080 }, driver: { ratio: 47, amount: 402320 }, pool: { ratio: 21, amount: 179760 } } },
+    public: { amount: 1628000, roi: 0, methodDetail: { direct: { ratio: 6, amount: 97680 }, service: { ratio: 14, amount: 227920 }, driver: { ratio: 28, amount: 455840 }, pool: { ratio: 52, amount: 846560 } } }
+  },
+  '2024FY': {
+    customer: { amount: 968000, roi: 1.58, methodDetail: { direct: { ratio: 30, amount: 290400 }, service: { ratio: 35, amount: 338800 }, driver: { ratio: 23, amount: 222640 }, pool: { ratio: 12, amount: 116160 } } },
+    product: { amount: 1426000, roi: 1.51, methodDetail: { direct: { ratio: 32, amount: 456320 }, service: { ratio: 26, amount: 370760 }, driver: { ratio: 28, amount: 399280 }, pool: { ratio: 14, amount: 199640 } } },
+    channel: { amount: 1986000, roi: 1.95, methodDetail: { direct: { ratio: 14, amount: 278040 }, service: { ratio: 18, amount: 357480 }, driver: { ratio: 47, amount: 933420 }, pool: { ratio: 21, amount: 417060 } } },
+    public: { amount: 3824000, roi: 0, methodDetail: { direct: { ratio: 6, amount: 229440 }, service: { ratio: 14, amount: 535360 }, driver: { ratio: 28, amount: 1070720 }, pool: { ratio: 52, amount: 1988480 } } }
+  }
+}
+
+// 动态场景数据（随周期变化）
+const dynamicScenes = computed(() => {
+  const pd = periodData[activePeriod.value]
+  return {
+    customer: { ...scenes.customer, amount: pd.customer.amount, roi: pd.customer.roi, methodDetail: pd.customer.methodDetail },
+    product: { ...scenes.product, amount: pd.product.amount, roi: pd.product.roi, methodDetail: pd.product.methodDetail },
+    channel: { ...scenes.channel, amount: pd.channel.amount, roi: pd.channel.roi, methodDetail: pd.channel.methodDetail },
+    public: { ...scenes.public, amount: pd.public.amount, roi: pd.public.roi, methodDetail: pd.public.methodDetail }
+  }
+})
+
 const methodForm = reactive({
   documentNo: 'FY-2026-0419-0086',
   costSubject: '客户经营费-沙龙活动',
@@ -503,13 +567,16 @@ const money = (v) => new Intl.NumberFormat('zh-CN', {
         :subtitle="currentSubtitle"
         :context-title="selectedMethod.name"
         :context-meta="selectedMethod.category"
+        :period-label="selectedPeriodOption.label"
+        :period-range="periodRange"
+        @change-period="openPeriodModal"
       />
 
       <!-- 仪表盘/方法总览 -->
       <DashboardPage
         v-if="activePage === 'dashboard'"
         :four-categories="fourCategories"
-        :scenes="scenes"
+        :scenes="dynamicScenes"
         :active-scene="activeScene"
         :active-method="activeMethod"
         :selected-method="selectedMethod"
@@ -521,7 +588,7 @@ const money = (v) => new Intl.NumberFormat('zh-CN', {
       <!-- 成本归集录入 -->
       <CostCollectionPage
         v-else-if="activePage === 'collect'"
-        :scenes="scenes"
+        :scenes="dynamicScenes"
         :four-categories="fourCategories"
         :active-scene="activeScene"
         :active-method="activeMethod"
@@ -548,9 +615,10 @@ const money = (v) => new Intl.NumberFormat('zh-CN', {
         :trace-rows="traceRows"
         :issue-list="issueList"
         :money="money"
-        :scenes="scenes"
+        :scenes="dynamicScenes"
         :active-scene="activeScene"
         :four-categories="fourCategories"
+        :active-period="activePeriod"
         @change-scene="activeScene = $event"
       />
 
@@ -559,8 +627,9 @@ const money = (v) => new Intl.NumberFormat('zh-CN', {
         v-else-if="activePage === 'roi'"
         :product-rows="productRows"
         :roi-summary="roiSummary"
-        :scenes="scenes"
+        :scenes="dynamicScenes"
         :active-scene="activeScene"
+        :active-period="activePeriod"
         :money="money"
         @change-scene="activeScene = $event"
       />
@@ -572,5 +641,111 @@ const money = (v) => new Intl.NumberFormat('zh-CN', {
         :system-upgrades="systemUpgrades"
       />
     </div>
+
+    <!-- 时间周期选择弹窗 -->
+    <Teleport to="body">
+      <div v-if="showPeriodModal" class="modal-overlay" @click.self="showPeriodModal = false">
+        <div class="modal-panel">
+          <div class="modal-header">
+            <h3>选择管理会计期间</h3>
+            <button class="modal-close" @click="showPeriodModal = false">&#x2715;</button>
+          </div>
+          <p class="modal-desc">选择数据统计的时间范围，各周期的成本数据将自动更新</p>
+          <div class="period-list">
+            <button
+              v-for="p in periodOptions"
+              :key="p.value"
+              class="period-option"
+              :class="{ active: activePeriod === p.value }"
+              @click="selectPeriod(p.value)"
+            >
+              <div class="period-option-main">
+                <strong>{{ p.label }}</strong>
+                <span class="period-option-range">{{ p.start }} ~ {{ p.end }}</span>
+              </div>
+              <span class="period-option-desc">{{ p.desc }}</span>
+              <span v-if="activePeriod === p.value" class="period-option-check">&#10003;</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
+
+<style>
+/* 周期选择弹窗 */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.6);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fade-in .15s ease;
+}
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+.modal-panel {
+  background: #1a1d27;
+  border: 1px solid rgba(85,200,255,.2);
+  border-radius: 20px;
+  padding: 28px;
+  width: 480px;
+  max-width: 90vw;
+  animation: slide-up .2s ease;
+}
+@keyframes slide-up { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.modal-header h3 { margin: 0; font-size: 16px; color: var(--cyan, #55c8ff); }
+.modal-close {
+  background: none;
+  border: none;
+  color: var(--muted, #6b7280);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+.modal-close:hover { color: #fff; }
+
+.modal-desc {
+  color: var(--muted, #6b7280);
+  font-size: 12px;
+  margin: 0 0 18px;
+}
+
+.period-list { display: flex; flex-direction: column; gap: 8px; }
+
+.period-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(85,200,255,.12);
+  background: rgba(255,255,255,.02);
+  cursor: pointer;
+  text-align: left;
+  transition: all .15s ease;
+  width: 100%;
+}
+.period-option:hover { border-color: rgba(85,200,255,.4); background: rgba(85,200,255,.06); }
+.period-option.active {
+  border-color: rgba(73,220,177,.5);
+  background: rgba(73,220,177,.1);
+}
+
+.period-option-main { flex: 1; }
+.period-option-main strong { display: block; font-size: 14px; color: #e5e7eb; }
+.period-option-range { display: block; font-size: 11px; color: #6b7280; margin-top: 2px; font-family: monospace; }
+.period-option-desc { font-size: 11px; color: #6b7280; flex-shrink: 0; }
+.period-option-check { color: #49dcb1; font-size: 16px; flex-shrink: 0; }
+</style>

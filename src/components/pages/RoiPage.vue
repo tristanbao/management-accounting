@@ -4,6 +4,7 @@ defineProps({
   roiSummary: { type: Array, required: true },
   scenes: { type: Object, required: true },
   activeScene: { type: String, required: true },
+  activePeriod: { type: String, required: true },
   money: { type: Function, required: true }
 })
 
@@ -35,6 +36,10 @@ const activeDimension = 'customer'
         <div>
           <p class="eyebrow">场景切换</p>
           <h3>选择分析场景</h3>
+        </div>
+        <div class="period-badge">
+          <span>&#9678;</span>
+          <span>{{ activePeriod }}</span>
         </div>
       </div>
       <div class="scene-tabs">
@@ -213,6 +218,34 @@ const activeDimension = 'customer'
 <style scoped>
 .roi-layout {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.period-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(73,220,177,.1);
+  border: 1px solid rgba(73,220,177,.3);
+  font-size: 12px;
+  color: var(--teal);
+  flex-shrink: 0;
+}
+.period-badge span:first-child {
+  font-size: 8px;
+  animation: blink 2s ease-in-out infinite;
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .3; }
 }
 
 /* 场景选择 */

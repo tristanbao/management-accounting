@@ -243,6 +243,152 @@ const processSteps = [
       </div>
     </article>
 
+    <!-- ==================== 系统接口全景图 ==================== -->
+    <article class="card panel system-map-panel">
+      <div class="title-row">
+        <div>
+          <p class="eyebrow">系统改造</p>
+          <h3>外围系统接口对接全景</h3>
+        </div>
+        <span class="mini">管理会计平台为新建核心，其余系统为改造或对接</span>
+      </div>
+
+      <div class="sys-map">
+        <div class="sys-center">
+          <div class="sys-center-core">
+            <strong>管理会计平台</strong>
+            <small>新建 · 规则引擎 · 归集台账 · 分摊试算 · 多维分析</small>
+          </div>
+          <div class="sys-center-badge">本项目核心产出</div>
+        </div>
+
+        <!-- 左侧：源业务系统 -->
+        <div class="sys-tier sys-tier-source">
+          <div class="sys-tier-label">源业务系统</div>
+          <div class="sys-card" style="--sc: #49dcb1">
+            <div class="sys-card-head">
+              <strong>费用报销系统</strong>
+              <span class="sys-tag tag-transform">改造</span>
+            </div>
+            <p>新增客群/产品/活动/渠道/条线字段；直归判定标记</p>
+            <div class="sys-fields">接口字段：customerCode, productCode, eventCode, channelCode, isDirect</div>
+          </div>
+          <div class="sys-card" style="--sc: #55c8ff">
+            <div class="sys-card-head">
+              <strong>CRM系统</strong>
+              <span class="sys-tag tag-new">新增</span>
+            </div>
+            <p>新增客户经理工时登记；服务关系配置；管户AUM占比计算</p>
+            <div class="sys-fields">接口字段：serverStaff, workHours, workHourRatio, serviceScope</div>
+          </div>
+          <div class="sys-card" style="--sc: #f7c46a">
+            <div class="sys-card-head">
+              <strong>营销管理平台</strong>
+              <span class="sys-tag tag-transform">改造</span>
+            </div>
+            <p>活动编号管理；推广批次管理；转化线索自动归集</p>
+            <div class="sys-fields">接口字段：eventCode, batchId, conversionCount, conversionAmount</div>
+          </div>
+          <div class="sys-card" style="--sc: #e879f9">
+            <div class="sys-card-head">
+              <strong>人力资源系统</strong>
+              <span class="sys-tag tag-transform">改造</span>
+            </div>
+            <p>岗位-条线映射；工时采集接口；人员-客户/产品关系</p>
+            <div class="sys-fields">接口字段：positionCode, lineCode, staffId, relationType</div>
+          </div>
+        </div>
+
+        <!-- 右侧：数据供给系统 -->
+        <div class="sys-tier sys-tier-supply">
+          <div class="sys-tier-label">数据供给系统</div>
+          <div class="sys-card" style="--sc: #55c8ff">
+            <div class="sys-card-head">
+              <strong>核心业务系统</strong>
+              <span class="sys-tag tag-link">对接</span>
+            </div>
+            <p>交易量/客户数/资产数据；产品-机构归属映射；系统调用量日志</p>
+            <div class="sys-fields">接口字段：transCount, transAmount, clientCount, productOrgMap</div>
+          </div>
+          <div class="sys-card" style="--sc: #f7c46a">
+            <div class="sys-card-head">
+              <strong>信贷管理系统</strong>
+              <span class="sys-tag tag-new">新增</span>
+            </div>
+            <p>贷款余额/发放额/户数；信贷产品与条线映射；不良率关联成本</p>
+            <div class="sys-fields">接口字段：loanBalance, loanAmount, creditProductCode, lineCode</div>
+          </div>
+          <div class="sys-card" style="--sc: #49dcb1">
+            <div class="sys-card-head">
+              <strong>财务系统</strong>
+              <span class="sys-tag tag-transform">改造</span>
+            </div>
+            <p>公共费用原始台账；成本科目标准化；分摊规则审批状态回写</p>
+            <div class="sys-fields">接口字段：costAccount, publicCostAmount, poolLevel, approvalStatus</div>
+          </div>
+          <div class="sys-card" style="--sc: #e879f9">
+            <div class="sys-card-head">
+              <strong>IT监控平台</strong>
+              <span class="sys-tag tag-link">对接</span>
+            </div>
+            <p>设备开机时长；系统调用量日志；线上渠道行为日志</p>
+            <div class="sys-fields">接口字段：deviceUpTime, apiCallCount, channelAccessLog</div>
+          </div>
+          <div class="sys-card" style="--sc: #55c8ff">
+            <div class="sys-card-head">
+              <strong>资产管理系统</strong>
+              <span class="sys-tag tag-transform">改造</span>
+            </div>
+            <p>网点面积/设备台账；场地占用分摊因子；资产折旧成本归集</p>
+            <div class="sys-fields">接口字段：branchArea, deviceCount, assetDepreciation</div>
+          </div>
+          <div class="sys-card" style="--sc: #f7c46a">
+            <div class="sys-card-head">
+              <strong>产品管理系统</strong>
+              <span class="sys-tag tag-transform">改造</span>
+            </div>
+            <p>产品目录标准化；产品-条线映射；产品生命周期成本归集</p>
+            <div class="sys-fields">接口字段：productCode, productLine, productLifecycle</div>
+          </div>
+        </div>
+
+        <!-- 下侧：消费分析系统 -->
+        <div class="sys-tier sys-tier-consume">
+          <div class="sys-tier-label">消费分析系统（数据输出）</div>
+          <div class="sys-card sys-card-small" style="--sc: #55c8ff">
+            <div class="sys-card-head">
+              <strong>经营分析平台</strong>
+              <span class="sys-tag tag-link">对接</span>
+            </div>
+            <p>多维盈利分析；客群/产品/渠道ROI看板</p>
+          </div>
+          <div class="sys-card sys-card-small" style="--sc: #49dcb1">
+            <div class="sys-card-head">
+              <strong>数据仓库/BI</strong>
+              <span class="sys-tag tag-link">对接</span>
+            </div>
+            <p>归集结果落标；成本主题宽表；定期ETL</p>
+          </div>
+          <div class="sys-card sys-card-small" style="--sc: #f7c46a">
+            <div class="sys-card-head">
+              <strong>监管报送系统</strong>
+              <span class="sys-tag tag-link">对接</span>
+            </div>
+            <p>管理会计数据监管报告；成本分摊结果披露</p>
+          </div>
+        </div>
+
+        <div class="sys-conn-left">
+          <div class="conn-line"></div>
+          <div class="conn-arrow">数据拉取</div>
+        </div>
+        <div class="sys-conn-right">
+          <div class="conn-line"></div>
+          <div class="conn-arrow">数据推送</div>
+        </div>
+      </div>
+    </article>
+
   </section>
 </template>
 
@@ -434,10 +580,113 @@ const processSteps = [
 }
 .field-chip.required { border-color: var(--cat-color); color: var(--cat-color); }
 
+/* 系统接口全景图 */
+.system-map-panel { grid-column: 1 / -1; }
+
+.sys-map {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 140px 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.sys-center {
+  grid-column: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 10px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(73,220,177,.12), rgba(85,200,255,.12));
+  border: 2px solid rgba(85,200,255,.3);
+  text-align: center;
+}
+.sys-center-core strong { display: block; font-size: 13px; color: var(--cyan); }
+.sys-center-core small { display: block; font-size: 10px; color: var(--muted); margin-top: 4px; line-height: 1.4; }
+.sys-center-badge {
+  font-size: 10px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(73,220,177,.2);
+  color: var(--teal);
+}
+
+.sys-tier { display: flex; flex-direction: column; gap: 10px; }
+.sys-tier-label {
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  margin-bottom: 2px;
+}
+
+.sys-tier-consume {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  padding-top: 8px;
+  border-top: 1px dashed rgba(85,200,255,.15);
+}
+
+.sys-card {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255,255,255,.02);
+  border: 1px solid rgba(255,255,255,.06);
+  border-left: 3px solid var(--sc);
+}
+.sys-card-small { padding: 10px; }
+
+.sys-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 5px;
+  gap: 6px;
+}
+.sys-card-head strong { font-size: 12px; color: var(--sc); flex: 1; }
+.sys-card p { font-size: 11px; color: var(--muted); line-height: 1.5; margin: 0 0 5px; }
+
+.sys-tag { font-size: 9px; padding: 2px 6px; border-radius: 4px; flex-shrink: 0; }
+.sys-tag.tag-transform { background: rgba(85,200,255,.15); color: var(--cyan); }
+.sys-tag.tag-new { background: rgba(247,196,106,.15); color: var(--gold); }
+.sys-tag.tag-link { background: rgba(73,220,177,.12); color: var(--teal); }
+
+.sys-fields {
+  font-size: 10px;
+  color: var(--muted);
+  font-family: monospace;
+  background: rgba(255,255,255,.03);
+  padding: 4px 6px;
+  border-radius: 6px;
+  word-break: break-all;
+}
+
+.sys-conn-left,
+.sys-conn-right {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.sys-conn-left { left: -40px; }
+.sys-conn-right { right: -40px; }
+.conn-line { width: 30px; height: 2px; background: linear-gradient(90deg, transparent, rgba(85,200,255,.4)); }
+.sys-conn-right .conn-line { background: linear-gradient(90deg, rgba(85,200,255,.4), transparent); }
+.conn-arrow { font-size: 10px; color: var(--muted); }
+
 @media (max-width: 1100px) {
-  .tiers-grid { grid-template-columns: 1fr; }
-  .four-cat-grid { grid-template-columns: 1fr; }
-  .scenes-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .method-info-row { grid-template-columns: 1fr; }
+  .sys-map { grid-template-columns: 1fr; }
+  .sys-center { grid-column: 1; }
+  .sys-tier-source { grid-column: 1; }
+  .sys-tier-supply { grid-column: 1; }
+  .sys-tier-consume { grid-column: 1; }
+  .sys-conn-left, .sys-conn-right { display: none; }
 }
 </style>

@@ -6,7 +6,8 @@ defineProps({
   money: { type: Function, required: true },
   scenes: { type: Object, required: true },
   activeScene: { type: String, required: true },
-  fourCategories: { type: Array, required: true }
+  fourCategories: { type: Array, required: true },
+  activePeriod: { type: String, required: true }
 })
 
 const emit = defineEmits(['change-scene'])
@@ -28,6 +29,10 @@ const sceneTabs = [
         <div>
           <p class="eyebrow">场景切换</p>
           <h3>选择成本归集场景</h3>
+        </div>
+        <div class="period-badge">
+          <span>&#9678;</span>
+          <span>{{ activePeriod }}</span>
         </div>
       </div>
       <div class="scene-tabs">
@@ -225,7 +230,29 @@ const sceneTabs = [
 }
 
 /* 场景切换 */
-.scene-tabs-panel { grid-column: 1 / -1; }
+.scene-tabs-panel { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 10px; }
+.scene-tabs-panel .title-row { justify-content: space-between; }
+
+.period-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(73,220,177,.1);
+  border: 1px solid rgba(73,220,177,.3);
+  font-size: 12px;
+  color: var(--teal);
+  flex-shrink: 0;
+}
+.period-badge span:first-child {
+  font-size: 8px;
+  animation: blink 2s ease-in-out infinite;
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .3; }
+}
 .scene-tabs { display: flex; gap: 10px; }
 .scene-tab {
   flex: 1;
