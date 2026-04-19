@@ -38,10 +38,10 @@ const threeTiers = [
 ]
 
 const sceneSummaries = [
-  { key: 'customer', label: '客户经营活动', method: '第一+第二分法', amount: 286000, color: '#49dcb1', desc: '高净值客户沙龙、权益投放、客户经理管户工时归集' },
-  { key: 'product', label: '产品销售推动', method: '第一+第三分法', amount: 418000, color: '#55c8ff', desc: '产品推广费、佣金激励、渠道线索转化归集' },
-  { key: 'channel', label: '渠道运营支撑', method: '第三+第四分法', amount: 562000, color: '#f7c46a', desc: '网点运营费、线上渠道、自助设备运营成本' },
-  { key: 'public', label: '公共管理支撑', method: '第四分法', amount: 980000, color: '#e879f9', desc: '总行/分行公共费用、条线支撑费、网点公共池' }
+  { key: 'customer', label: '客户经营活动', method: '第一+第二分法', amount: 186000, color: '#49dcb1', desc: '高净值客户沙龙、权益投放、客户经理管户工时归集' },
+  { key: 'product', label: '产品销售推动', method: '第一+第三分法', amount: 528000, color: '#55c8ff', desc: '产品推广费、佣金激励、渠道线索转化归集' },
+  { key: 'channel', label: '渠道运营支撑', method: '第三+第四分法', amount: 342000, color: '#f7c46a', desc: '网点运营费、线上渠道、自助设备运营成本（业务系统自动接入）' },
+  { key: 'public', label: '公共管理支撑', method: '第四分法', amount: 1150000, color: '#e879f9', desc: '总行/分行公共费用、条线支撑费、网点公共池（财务系统直采）' }
 ]
 
 const processSteps = [
@@ -352,6 +352,14 @@ const processSteps = [
             </div>
             <p>产品目录标准化；产品-条线映射；产品生命周期成本归集</p>
             <div class="sys-fields">接口字段：productCode, productLine, productLifecycle</div>
+          </div>
+          <div class="sys-card" style="--sc: #49dcb1">
+            <div class="sys-card-head">
+              <strong>信息科技项目管理系统</strong>
+              <span class="sys-tag tag-transform">改造</span>
+            </div>
+            <p>信息系统开发成本归集；项目工时与资产关联；科技投入产出分析</p>
+            <div class="sys-fields">接口字段：projectCode, devCost, projectHours, assetCode</div>
           </div>
         </div>
 

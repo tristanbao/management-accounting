@@ -85,11 +85,21 @@ function getIntegrationSteps(method, scene) {
       { type: 'done', system: 'CRM系统', message: `写入归集台账-服务关系维，工时成本分配至客群[A03财富客群]...`, duration: 300 },
     ]
   } else if (method === 'driver') {
+    // 渠道运营支撑：主要从业务系统自动拉取，非费用报销
+    if (scene === 'channel') {
+      return [
+        { type: 'api', system: '核心业务系统（改造）', message: '调入各渠道交易量数据 /core/channel-trans?period=2026-04，交易笔数自动按渠道标识分类', duration: 500 },
+        { type: 'api', system: 'IT监控系统（改造）', message: '拉取ATM/CDM设备开机日志，营业部[2,280台时]/零售支行[2,040台时]/社区银行[1,680台时]', duration: 500 },
+        { type: 'api', system: '资产管理系统（改造）', message: '同步网点面积数据：总行大楼[3,200㎡]/分行办公楼[4,800㎡]/各支行[4,800㎡]', duration: 400 },
+        { type: 'api', system: '财务系统', message: '查询成本科目[渠道运营费-自助设备/网点运营]，确认原始发生额[¥342,000]', duration: 400 },
+        { type: 'calc', system: '管理会计平台', message: '驱动因子[FR-V002]执行：按各渠道交易量占比自动分摊，手机银行[42%]/网银[28%]/网点[30%]', duration: 400 },
+        { type: 'done', system: '管理会计平台', message: `写入归集台账-驱动因子维，分摊结果：手机银行[¥143,640] / 网银[¥95,760] / 网点[¥102,600]`, duration: 300 },
+      ]
+    }
     const driverByScene = {
       customer: { sys: '核心业务系统', msg: '拉取2026年4月活跃客户数据，全量客户[328户]，A03客群[203户]' },
       product: { sys: 'CRM系统', msg: '拉取授信转化客户数据，当月转化客户[286户]，普惠经营贷[157户]' },
-      channel: { sys: 'IT监控系统', msg: '拉取自助设备开机日志，全辖ATM/CDM[6000台时]，营业部[2280台时]' },
-      public: { sys: '人力资源系统', msg: '拉取各条线工时记录，全行科技支持工时[1200h]，零售条线[504h]' }
+      public: { sys: '人力资源系统', msg: '拉取各条线工时记录，全行科技支持工时[1,200h]，零售条线[504h]' }
     }
     const d = driverByScene[scene]
     return [
@@ -97,17 +107,17 @@ function getIntegrationSteps(method, scene) {
       { type: 'api', system: d.sys, message: d.msg, duration: 500 },
       { type: 'api', system: 'IT监控系统', message: '拉取设备台账，网点设备台数[128台]，设备分布已同步', duration: 400 },
       { type: 'calc', system: '管理会计平台', message: '驱动因子计算：受益对象[3个]，按交易量/工时比例自动分摊', duration: 400 },
-      { type: 'api', system: '财务系统', message: '查询成本科目[渠道运营费-自助设备]，获取原始发生额[562,000元]', duration: 350 },
-      { type: 'done', system: '管理会计平台', message: `写入归集台账-驱动因子维，分摊结果：营业部[¥253,800] / 零售支行[¥226,980] / 社区银行[¥187,220]`, duration: 300 },
+      { type: 'api', system: '财务系统', message: '查询成本科目，获取原始发生额，驱动因子自动关联', duration: 350 },
+      { type: 'done', system: '管理会计平台', message: `写入归集台账-驱动因子维，分摊结果已自动写入各受益对象`, duration: 300 },
     ]
   } else {
     return [
-      { type: 'api', system: '财务系统', message: '调入公共费用台账接口 /fin/public-costs?period=2026-Q1', duration: 500 },
-      { type: 'api', system: '财务系统', message: '获取总行公共管理费原始发生额[580,000元]，成本性质[品牌支撑]', duration: 450 },
-      { type: 'api', system: '核心业务系统', message: '查询各分行收入贡献比例，计算分配权重[Nanchang:32%/Jiujiang:28%/Fuzhou:40%]', duration: 500 },
-      { type: 'calc', system: '管理会计平台', message: '分摊规则[FR-P001]执行：按收入贡献比例分配至各分行，试算金额确认', duration: 400 },
+      { type: 'api', system: '财务系统（改造）', message: '公共费用原始台账直采接口 /fin/public-costs?period=2026-Q1，按成本池层级[总行/分行/条线/网点]自动分类', duration: 500 },
+      { type: 'api', system: '核心业务系统（改造）', message: '查询各分行收入贡献比例[Nanchang:32%/Jiujiang:28%/Fuzhou:40%]，自动计算分摊权重', duration: 500 },
+      { type: 'api', system: '人力资源系统（改造）', message: '同步各条线人数[零售:1,280人/对公:860人/普惠:540人]、岗位-条线映射数据', duration: 450 },
+      { type: 'calc', system: '管理会计平台', message: '规则[FR-P001→FR-P002→FR-P003]执行"总行→分行→条线"逐级分摊，试算完成', duration: 400 },
       { type: 'api', system: '审批流系统', message: '提交分摊试算结果至审批流，审批节点[分行财务经理→总行运营部]', duration: 400 },
-      { type: 'done', system: '管理会计平台', message: `写入归集台账-公共池维，分摊状态[待审批]，待分行确认后生效`, duration: 300 },
+      { type: 'done', system: '管理会计平台', message: `写入归集台账-公共池维，分摊状态[待审批]，总行[¥575,000]→分行[Nanchang:¥184,000/Jiujiang:¥161,000]`, duration: 300 },
     ]
   }
 }
@@ -207,23 +217,23 @@ const integrationSources = computed(() => {
         { name: 'CRM系统', role: '产品经理支持产品列表', fields: ['benefitProducts', 'serverStaff'], status: '新增中', color: '#e879f9' }
       ],
       channel: [
-        { name: '核心业务系统', role: '各渠道交易笔数/金额数据', fields: ['driverValue', 'ratio'], status: '已对接', color: '#49dcb1' },
-        { name: 'IT监控系统', role: '自助设备开机时长日志', fields: ['driverValue', 'benefitCode'], status: '已对接', color: '#55c8ff' },
-        { name: '资产管理系统', role: '网点面积与设备台账', fields: ['benefitType', 'benefitCode'], status: '改造中', color: '#f7c46a' },
-        { name: '财务系统', role: '成本科目与原始发生额', fields: ['costSubject', 'dataSource'], status: '已对接', color: '#e879f9' }
+        { name: '核心业务系统', role: '各渠道交易笔数/金额自动同步（改造）', fields: ['driverValue', 'ratio', 'channelCode'], status: '已对接', color: '#49dcb1' },
+        { name: 'IT监控系统', role: '自助设备开机时长/系统调用量日志同步（改造）', fields: ['driverValue', 'benefitCode', 'deviceUpTime'], status: '已对接', color: '#55c8ff' },
+        { name: '资产管理系统', role: '网点面积/设备台账同步（改造）', fields: ['benefitType', 'benefitCode', 'branchArea'], status: '改造中', color: '#f7c46a' },
+        { name: '财务系统', role: '成本科目原始发生额直采（改造）', fields: ['costSubject', 'dataSource', 'trialAmount'], status: '已对接', color: '#e879f9' }
       ],
       public: [
-        { name: '财务系统', role: '公共费用原始台账', fields: ['documentNo', 'costSubject', 'trialAmount'], status: '已对接', color: '#49dcb1' },
-        { name: '核心业务系统', role: '各分行收入贡献比例计算', fields: ['benefitScope', 'poolDimension'], status: '已对接', color: '#55c8ff' },
-        { name: '人力资源系统', role: '各条线人数与岗位分布', fields: ['poolDimension', 'benefitScope'], status: '新增中', color: '#f7c46a' },
-        { name: '审批流系统', role: '分摊规则审批与执行状态', fields: ['approvalStatus', 'poolRuleCode'], status: '新增中', color: '#e879f9' }
+        { name: '财务系统', role: '公共费用原始台账直采，按成本池层级自动分类（改造）', fields: ['documentNo', 'costSubject', 'trialAmount', 'poolLevel'], status: '已对接', color: '#49dcb1' },
+        { name: '核心业务系统', role: '各分行收入贡献比例自动计算（改造）', fields: ['benefitScope', 'poolDimension', 'revenueRatio'], status: '改造中', color: '#55c8ff' },
+        { name: '人力资源系统', role: '各条线人数与岗位分布同步（改造）', fields: ['poolDimension', 'benefitScope', 'staffCount'], status: '改造中', color: '#f7c46a' },
+        { name: '审批流系统', role: '分摊规则审批与执行状态（新增）', fields: ['approvalStatus', 'poolRuleCode'], status: '新增中', color: '#e879f9' }
       ]
     }
     const notesByScene = {
-      customer: '高净值客户礼品费、权益费、沙龙活动费，在费用申请时录入客群编码，审批通过后直接写入客户维度归集台账。',
-      product: '产品推广费、广告投放费、佣金激励，在营销管理平台登记推广计划，转化数据从广告平台API拉取后自动归集。',
-      channel: '渠道运营费按交易量、设备开机时长等驱动因子分摊，数据从核心系统和IT监控平台定期拉取。',
-      public: '总行/分行公共管理费归入成本池，按收入贡献或网点数量等维度分层分摊，审批通过后生效。'
+      customer: '高净值客户礼品费、权益费、沙龙活动费，在费用申请时录入客群编码，审批通过后直接写入客户维度归集台账。客户经理管户工时由CRM系统按AUM占比自动计算，无需人工录入。',
+      product: '产品推广费、广告投放费在营销管理平台登记推广计划后，转化线索从数字营销平台API自动拉取，无需在费用报销系统逐笔录入。',
+      channel: '渠道运营成本通过业务系统自动接入：交易量从核心业务系统拉取、设备台账从IT监控系统同步、网点面积从资产管理系统接入，按驱动因子自动分摊，全流程无需人工录入费用。',
+      public: '总行/分行公共管理费从财务系统原始台账自动接入，无需人工录入；受益范围识别与分摊因子从核心业务、人力资源、资产管理系统自动拉取，按分层规则逐级分摊。'
     }
     return {
       title: `${sceneLabel} - 外部系统数据接入`,
@@ -245,10 +255,10 @@ const integrationSources = computed(() => {
         { name: '管理会计平台', role: '服务关系计算与台账写入', fields: ['workHourRatio', 'serviceTargetCode'], status: '新增中', color: '#e879f9' }
       ],
       channel: [
-        { name: 'CRM系统', role: '渠道运营人员工时登记', fields: ['serverStaff', 'workHours', 'workHourRatio'], status: '已对接', color: '#55c8ff' },
-        { name: 'IT监控系统', role: '自助设备运维工时记录', fields: ['serverStaff', 'driverValue'], status: '改造中', color: '#49dcb1' },
-        { name: '资产管理系统', role: '设备台账与维护工时', fields: ['benefitCode', 'workHourRatio'], status: '改造中', color: '#f7c46a' },
-        { name: '管理会计平台', role: '工时占比计算与台账写入', fields: ['workHourRatio', 'serviceTargetCode'], status: '新增中', color: '#e879f9' }
+        { name: 'CRM系统', role: '渠道运营人员工时登记（改造）', fields: ['serverStaff', 'workHours', 'workHourRatio'], status: '改造中', color: '#55c8ff' },
+        { name: 'IT监控系统', role: '自助设备运维工时与设备运行数据（改造）', fields: ['serverStaff', 'driverValue', 'deviceUpTime'], status: '改造中', color: '#49dcb1' },
+        { name: '资产管理系统', role: '设备台账与维护工时同步（改造）', fields: ['benefitCode', 'workHourRatio', 'branchArea'], status: '改造中', color: '#f7c46a' },
+        { name: '管理会计平台', role: '工时占比计算与台账写入（新增）', fields: ['workHourRatio', 'serviceTargetCode'], status: '新增中', color: '#e879f9' }
       ],
       public: [
         { name: '人力资源系统', role: '各条线公共支撑工时登记', fields: ['serverStaff', 'workHours', 'workHourRatio'], status: '新增中', color: '#49dcb1' },
@@ -258,10 +268,10 @@ const integrationSources = computed(() => {
       ]
     }
     const notesByScene = {
-      customer: '客户经理管户工时按AUM占比归集至客群，服务关系在CRM系统登记后自动写入服务关系台账。',
-      product: '产品经理支持各产品的工时占比由系统自动计算，按受益产品分摊人力成本。',
-      channel: '渠道运营人员工时按服务各渠道的实际工时占比分配，IT设备运维工时单独归集。',
-      public: '总行/分行公共支撑工时按岗位和人数比例分配至各受益条线，需审批确认后方可生效。'
+      customer: '客户经理管户工时按AUM占比归集至客群，CRM系统自动计算管户AUM占比，无需人工录入。权益平台改造后，客户权益领取记录按客群编码自动归集。',
+      product: '产品经理支持各产品的工时占比由CRM系统自动计算，按受益产品分摊人力成本。数字营销平台改造后，广告转化线索自动拉取，无需人工填报。',
+      channel: '渠道运营人员工时由CRM系统改造后自动登记；IT设备运维工时由IT监控系统改造后同步；管理会计平台按工时占比自动计算并写入归集台账。',
+      public: '总行/分行公共支撑工时由人力资源系统改造后自动登记，按岗位和人数比例分配至各受益条线，需审批确认后方可生效。财务系统改造后公共费用原始台账自动同步，无需人工录入。'
     }
     return {
       title: `${sceneLabel} - 外部系统数据接入`,
@@ -283,10 +293,10 @@ const integrationSources = computed(() => {
         { name: '财务系统', role: '产品推广费用原始发生额', fields: ['costSubject', 'dataSource'], status: '已对接', color: '#e879f9' }
       ],
       channel: [
-        { name: '核心业务系统', role: '各渠道交易笔数/金额', fields: ['driverValue', 'ratio'], status: '已对接', color: '#55c8ff' },
-        { name: 'IT监控系统', role: '设备开机时长与系统调用量', fields: ['driverValue', 'benefitCode'], status: '已对接', color: '#49dcb1' },
-        { name: '资产管理系统', role: '网点面积与设备台数', fields: ['benefitType', 'benefitCode'], status: '改造中', color: '#f7c46a' },
-        { name: '财务系统', role: '渠道运营费原始发生额', fields: ['costSubject', 'dataSource'], status: '已对接', color: '#e879f9' }
+        { name: '核心业务系统', role: '各渠道交易笔数/金额自动同步（改造）', fields: ['driverValue', 'ratio', 'channelCode'], status: '已对接', color: '#55c8ff' },
+        { name: 'IT监控系统', role: '设备开机时长/系统调用量/线上行为日志同步（改造）', fields: ['driverValue', 'benefitCode', 'deviceUpTime'], status: '已对接', color: '#49dcb1' },
+        { name: '资产管理系统', role: '网点面积/设备台数/折旧成本同步（改造）', fields: ['benefitType', 'benefitCode', 'branchArea'], status: '改造中', color: '#f7c46a' },
+        { name: '财务系统', role: '成本科目原始发生额直采（改造）', fields: ['costSubject', 'dataSource', 'trialAmount'], status: '已对接', color: '#e879f9' }
       ],
       public: [
         { name: '人力资源系统', role: '各条线工时记录与人力成本', fields: ['driverValue', 'ratio'], status: '新增中', color: '#49dcb1' },
@@ -296,10 +306,10 @@ const integrationSources = computed(() => {
       ]
     }
     const notesByScene = {
-      customer: '按活跃客户数将客户经营成本分摊至各客群，活跃度数据从核心系统和CRM系统拉取。',
-      product: '按授信转化客户数将产品推广成本分摊至各产品，转化数据从CRM和数字营销平台拉取。',
-      channel: '按交易量、设备开机时长等驱动因子将渠道运营成本分摊至各受益渠道。',
-      public: '按工时占比、面积、人数等驱动因子将公共管理成本分配至各条线/机构。'
+      customer: '按活跃客户数将客户经营成本分摊至各客群，活跃度数据从核心业务系统和CRM系统自动拉取，无需人工录入。',
+      product: '按授信转化客户数将产品推广成本分摊至各产品，转化线索从CRM和数字营销平台API自动拉取，无需人工填报。',
+      channel: '按交易量、设备开机时长等驱动因子将渠道运营成本分摊至各受益渠道，数据从核心业务系统和IT监控系统自动同步，全流程无需人工录入。',
+      public: '按工时占比、面积、人数等驱动因子将公共管理成本分配至各条线/机构，分摊因子从人力资源系统和资产管理系统自动拉取。'
     }
     return {
       title: `${sceneLabel} - 外部系统数据接入`,
@@ -334,10 +344,10 @@ const integrationSources = computed(() => {
       ]
     }
     const notesByScene = {
-      customer: '客户经营相关的公共支撑费用按客群收入贡献比例分配至各客群成本，审批通过后生效。',
-      product: '产品推广相关的公共支撑费用按产品线收入贡献比例分配至各产品，审批通过后生效。',
-      channel: '渠道运营公共费用按网点数量、面积、业务量等维度分配至各渠道，审批通过后生效。',
-      public: '公共管理费用按总行→分行→条线逐层分配，审批流从分行财务经理到总行运营部，确认后生效。'
+      customer: '客户经营相关的公共支撑费用按客群收入贡献比例分配至各客群成本，审批通过后生效。财务系统改造后，原始费用数据自动同步，无需人工录入。',
+      product: '产品推广相关的公共支撑费用按产品线收入贡献比例分配至各产品，审批通过后生效。财务系统改造后，原始费用数据自动同步，无需人工录入。',
+      channel: '渠道运营公共费用按网点数量、面积、业务量等维度分配至各渠道，数据从资产管理系统和核心业务系统自动拉取，审批通过后生效。',
+      public: '公共管理费用从财务系统原始台账自动接入，按总行→分行→条线逐层分配，分摊因子从核心业务、人力资源、资产管理系统自动获取，审批流确认后生效。'
     }
     return {
       title: `${sceneLabel} - 外部系统数据接入`,
@@ -359,8 +369,11 @@ function applySceneData() {
   const m = props.activeMethod
 
   if (m === 'direct') {
+    // 直接归集：客群/产品/渠道/活动/项目维度
+    const docMap = { customer: '86', product: '87', channel: '88', public: '89' }
+    const eventMap = { customer: 'ACT-PRIV-2026Q1-015', product: 'PRD-MKT-2026-006', channel: 'CHL-OP-2026-001', public: 'PUB-MGMT-2026-001' }
     Object.assign(props.collectForm, {
-      documentNo: 'FY-2026-0419-00' + (props.activeScene === 'customer' ? '86' : props.activeScene === 'product' ? '87' : props.activeScene === 'channel' ? '88' : '89'),
+      documentNo: 'FY-2026-0419-00' + docMap[props.activeScene],
       costSubject: s.costType,
       amount: s.amount,
       org: '九江银行南昌分行',
@@ -368,57 +381,115 @@ function applySceneData() {
       channel: s.channel.split('/')[0].trim(),
       productCode: s.product.split('/')[0].trim(),
       customerSegment: s.customer,
-      eventCode: s.label === '客户经营活动' ? 'ACT-PRIV-2026Q1-015' : s.label === '产品销售推动' ? 'PRD-MKT-2026-006' : s.label === '渠道运营支撑' ? 'CHL-OP-2026-001' : 'PUB-MGMT-2026-001',
+      eventCode: eventMap[props.activeScene],
       owner: s.manager,
       isDirect: '是（直连经营对象）',
       notes: `${s.label}成本归集，归集方法：${s.method}`
     })
   } else if (m === 'service') {
-    const hourMap = { customer: 48, product: 36, channel: 24, public: 16 }
-    const ratioMap = { customer: 32, product: 25, channel: 18, public: 10 }
-    Object.assign(props.collectForm, {
-      documentNo: 'GS-2026-0419-00' + (props.activeScene === 'customer' ? '21' : props.activeScene === 'product' ? '22' : props.activeScene === 'channel' ? '23' : '24'),
-      serverStaff: s.manager,
-      serviceTargetType: '客户/客群',
-      serviceTargetCode: s.customer,
-      serviceAction: `针对${s.customer}的${s.label}服务，记录服务时长、覆盖范围及工时分摊`,
-      servicePeriod: '2026-04-01 至 2026-04-30',
-      workHours: hourMap[props.activeScene],
-      workHourRatio: ratioMap[props.activeScene],
-      benefitProducts: s.product,
-      benefitOrgs: '九江银行南昌分行',
-      enterPool: '直接归集',
-      costSubject: s.costType,
-      driverType: '工时占比',
-      driverValue: hourMap[props.activeScene],
-      ratio: ratioMap[props.activeScene],
-      dataSource: 'CRM系统',
-      collectFreq: '月',
-      poolLevel: '',
-      benefitScope: '',
-      poolDimension: '',
-      poolRuleCode: '',
-      trialAmount: 0,
-      approvalStatus: ''
-    })
-  } else if (m === 'driver') {
-    const driverData = {
-      customer: { item: '高净值客户经营费', driver: '客户数', value: 328, ratio: 62 },
-      product: { item: '产品推广运营费', driver: '授信转化客户数', value: 286, ratio: 55 },
-      channel: { item: '自助设备运营费', driver: '设备开机时长', value: 6000, ratio: 45 },
-      public: { item: '科技系统运维费', driver: '工时占比', value: 1200, ratio: 30 }
+    // 服务关系归集：渠道运营 → 工时分配至渠道/机构，而非客户
+    if (props.activeScene === 'channel') {
+      Object.assign(props.collectForm, {
+        documentNo: 'GS-2026-0419-0023',
+        serverStaff: '渠道运营部 / 各渠道负责人',
+        serviceTargetType: '渠道',
+        serviceTargetCode: '营业网点 / 手机银行 / 企业网银 / 客服中心',
+        serviceAction: `针对手机银行/网银/网点/客服各渠道的运营支撑服务，记录服务时长及工时分摊`,
+        servicePeriod: '2026-04-01 至 2026-04-30',
+        workHours: 24,
+        workHourRatio: 18,
+        benefitProducts: '全产品线',
+        benefitOrgs: '九江银行全辖渠道',
+        enterPool: '直接归集',
+        costSubject: '渠道运营费（设备/人力/场地/通信）',
+        driverType: '工时占比',
+        driverValue: 24,
+        ratio: 18,
+        dataSource: 'CRM系统（改造）',
+        collectFreq: '月',
+        poolLevel: '',
+        benefitScope: '',
+        poolDimension: '',
+        poolRuleCode: '',
+        trialAmount: 0,
+        approvalStatus: ''
+      })
+    } else if (props.activeScene === 'public') {
+      Object.assign(props.collectForm, {
+        documentNo: 'GS-2026-0419-0024',
+        serverStaff: '总行运营管理部 / 各分行综合部',
+        serviceTargetType: '条线/机构',
+        serviceTargetCode: '零售金融部 / 对公业务部 / 普惠金融部',
+        serviceAction: `针对各业务条线的公共管理支撑服务，记录支撑工时及分摊比例`,
+        servicePeriod: '2026-04-01 至 2026-04-30',
+        workHours: 16,
+        workHourRatio: 10,
+        benefitProducts: '全产品线',
+        benefitOrgs: '总行/南昌分行/九江分行/福州分行',
+        enterPool: '进入服务成本池',
+        costSubject: '公共管理费（人力/场地/合规/品牌）',
+        driverType: '工时占比',
+        driverValue: 16,
+        ratio: 10,
+        dataSource: '人力资源系统（改造）',
+        collectFreq: '月',
+        poolLevel: '',
+        benefitScope: '',
+        poolDimension: '',
+        poolRuleCode: '',
+        trialAmount: 0,
+        approvalStatus: ''
+      })
+    } else {
+      // 客户/产品场景的服务关系归集
+      const hourMap = { customer: 48, product: 36 }
+      const ratioMap = { customer: 32, product: 25 }
+      const docMap = { customer: '21', product: '22' }
+      Object.assign(props.collectForm, {
+        documentNo: 'GS-2026-0419-00' + docMap[props.activeScene],
+        serverStaff: s.manager,
+        serviceTargetType: '客户/客群',
+        serviceTargetCode: s.customer,
+        serviceAction: `针对${s.customer}的${s.label}服务，记录服务时长、覆盖范围及工时分摊`,
+        servicePeriod: '2026-04-01 至 2026-04-30',
+        workHours: hourMap[props.activeScene],
+        workHourRatio: ratioMap[props.activeScene],
+        benefitProducts: s.product,
+        benefitOrgs: '九江银行南昌分行',
+        enterPool: '直接归集',
+        costSubject: s.costType,
+        driverType: '工时占比',
+        driverValue: hourMap[props.activeScene],
+        ratio: ratioMap[props.activeScene],
+        dataSource: 'CRM系统',
+        collectFreq: '月',
+        poolLevel: '',
+        benefitScope: '',
+        poolDimension: '',
+        poolRuleCode: '',
+        trialAmount: 0,
+        approvalStatus: ''
+      })
     }
-    const srcMap = { customer: '核心业务系统', product: 'CRM系统', channel: 'IT监控系统', public: '人力资源系统' }
+  } else if (m === 'driver') {
+    // 驱动因子分摊：每个场景有各自的驱动因子和受益对象类型
+    const driverData = {
+      customer: { item: '客户经理管户工时成本', driver: '客户数（AUM占比）', value: 328, ratio: 62, benefitType: '客群', benefitCode: 'A03财富客群（高净值客户）', src: 'CRM系统' },
+      product: { item: '产品推广运营费', driver: '授信转化客户数', value: 286, ratio: 55, benefitType: '产品', benefitCode: '普惠经营贷 / 稳利盈系列', src: '核心业务系统' },
+      channel: { item: '自助设备运营费', driver: '设备开机时长', value: 6000, ratio: 45, benefitType: '渠道', benefitCode: '手机银行 / 网上银行 / 营业网点 / 客服中心', src: 'IT监控系统（改造）' },
+      public: { item: '科技系统运维费', driver: '工时占比', value: 1200, ratio: 30, benefitType: '条线', benefitCode: '零售金融部 / 对公业务部 / 普惠金融部', src: '人力资源系统（改造）' }
+    }
+    const docMap = { customer: '31', product: '32', channel: '33', public: '34' }
     const d = driverData[props.activeScene]
     Object.assign(props.collectForm, {
-      documentNo: 'DF-2026-0419-00' + (props.activeScene === 'customer' ? '31' : props.activeScene === 'product' ? '32' : props.activeScene === 'channel' ? '33' : '34'),
+      documentNo: 'DF-2026-0419-00' + docMap[props.activeScene],
       costSubject: d.item,
       driverType: d.driver,
       driverValue: d.value,
       ratio: d.ratio,
-      benefitType: '客群',
-      benefitCode: s.customer,
-      dataSource: srcMap[props.activeScene],
+      benefitType: d.benefitType,
+      benefitCode: d.benefitCode,
+      dataSource: d.src,
       collectFreq: '月',
       amount: 0, org: '', line: '', channel: '', productCode: '',
       customerSegment: '', eventCode: '', owner: '',
@@ -427,15 +498,17 @@ function applySceneData() {
       poolRuleCode: '', trialAmount: 0, approvalStatus: ''
     })
   } else {
+    // 公共成本池分摊
     const poolData = {
       customer: { item: '总行公共管理费-客户经营支撑', level: '总行公共池', nature: '品牌支撑', scope: '全行客户经营条线', dimension: '按收入贡献', ruleCode: 'FR-P001', amount: 580000, status: '待审批' },
       product: { item: '分行运营支撑费-产品推广', level: '分行公共池', nature: '运营支撑', scope: '零售金融部', dimension: '按网点数量', ruleCode: 'FR-P002', amount: 320000, status: '试算中' },
       channel: { item: '条线公共费-渠道运营', level: '条线公共池', nature: '管理费用', scope: '渠道运营部', dimension: '按业务量', ruleCode: 'FR-P003', amount: 210000, status: '已批准' },
       public: { item: '网点公共运营费-综合支撑', level: '网点公共池', nature: '人力成本', scope: '全辖网点', dimension: '按面积', ruleCode: 'FR-P004', amount: 145000, status: '待分摊' }
     }
+    const docMap = { customer: '41', product: '42', channel: '43', public: '44' }
     const p = poolData[props.activeScene]
     Object.assign(props.collectForm, {
-      documentNo: 'CP-2026-0419-00' + (props.activeScene === 'customer' ? '41' : props.activeScene === 'product' ? '42' : props.activeScene === 'channel' ? '43' : '44'),
+      documentNo: 'CP-2026-0419-00' + docMap[props.activeScene],
       costSubject: p.item,
       poolLevel: p.level,
       poolNature: p.nature,
