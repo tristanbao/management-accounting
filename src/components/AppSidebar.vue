@@ -11,7 +11,7 @@ const emit = defineEmits(['navigate'])
   <aside class="sidebar card">
     <div class="brand">
       <p class="eyebrow">JIUJIANG BANK</p>
-      <h2>成本归集改造</h2>
+      <h2>成本精细化管理业务流程优化</h2>
       <p class="brand-sub">三层递进 · 四分法 · 流程嵌入式改造</p>
     </div>
 
