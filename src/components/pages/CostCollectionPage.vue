@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 
 const props = defineProps({
   scenes: { type: Object, required: true },
@@ -10,13 +10,111 @@ const props = defineProps({
   money: { type: Function, required: true }
 })
 
-const emit = defineEmits(['change-scene', 'change-method', 'apply-scene'])
+const emit = defineEmits(['change-scene', 'change-method'])
 
 const selectedMethod = computed(() =>
   props.fourCategories?.find(c => c.id === props.activeMethod) || props.fourCategories?.[0]
 )
 
+// ============================================================
+// 数据接入状态
+// ============================================================
+const isLoading = ref(false)
+const loadProgress = ref(0)
+const integrationLogs = ref([])
+
+function addLog(type, system, message) {
+  integrationLogs.value.unshift({ type, system, message, time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) })
+  if (integrationLogs.value.length > 20) integrationLogs.value.pop()
+}
+
+// 监听 apply-scene，在 App.vue emit 之前触发 loading 动画
+function handleApply() {
+  if (isLoading.value) return
+  isLoading.value = true
+  loadProgress.value = 0
+  integrationLogs.value = []
+
+  const method = props.activeMethod
+  const scene = props.activeScene
+  const scenes = {
+    customer: '客户经营活动',
+    product: '产品销售推动',
+    channel: '渠道运营支撑',
+    public: '公共管理支撑'
+  }
+  const sceneLabel = scenes[scene]
+
+  const steps = getIntegrationSteps(method, scene)
+
+  let delay = 0
+  steps.forEach((step, i) => {
+    setTimeout(() => {
+      addLog(step.type, step.system, step.message)
+      loadProgress.value = Math.round(((i + 1) / steps.length) * 100)
+      if (i === steps.length - 1) {
+        setTimeout(() => {
+          isLoading.value = false
+          applySceneData()
+        }, 300)
+      }
+    }, delay)
+    delay += step.duration
+  })
+}
+
+function getIntegrationSteps(method, scene) {
+  const sceneLabel = { customer: '客户经营活动', product: '产品销售推动', channel: '渠道运营支撑', public: '公共管理支撑' }[scene]
+
+  if (method === 'direct') {
+    return [
+      { type: 'api', system: '费用报销系统', message: '调入费用申请接口 FY-2026-API-001，获取本期费用明细...', duration: 400 },
+      { type: 'api', system: 'CRM系统', message: `查询客户经理[张岚]管户关系，获取客群编码[A03]归属信息...`, duration: 500 },
+      { type: 'api', system: '产品管理系统', message: '查询产品[稳利盈6M]归属条线，获取产品编码与条线映射...', duration: 400 },
+      { type: 'api', system: '营销管理平台', message: `拉取活动编号[ACT-PRIV-2026Q1-015]关联产品与客群数据...`, duration: 350 },
+      { type: 'check', system: '管理会计平台', message: `直归规则[FR-D001]命中校验：客群[A03]归属明确，标记为直接归集`, duration: 300 },
+      { type: 'done', system: '费用报销系统', message: `写入归集台账-客户维，写入金额 ${props.money ? '¥286,000' : '¥286,000'}，状态：已归集`, duration: 300 },
+    ]
+  } else if (method === 'service') {
+    return [
+      { type: 'api', system: 'CRM系统', message: '调入客户经理工时查询接口 /crm/workhours?month=2026-04', duration: 500 },
+      { type: 'api', system: '人力资源系统', message: '查询客户经理[张岚]岗位-条线映射，获取归属条线[零售金融部]...', duration: 450 },
+      { type: 'api', system: 'CRM系统', message: '拉取管户关系表，管户AUM≥600万客户数[203户]，占比[62%]...', duration: 500 },
+      { type: 'api', system: '产品管理系统', message: '查询产品经理[李峻]支持产品列表，支持产品[普惠经营贷/稳利盈6M]...', duration: 400 },
+      { type: 'calc', system: '管理会计平台', message: '工时占比自动计算：客户经理月均标准工时[176h]，本月管户工时[48h]，占比[32%]', duration: 350 },
+      { type: 'done', system: 'CRM系统', message: `写入归集台账-服务关系维，工时成本分配至客群[A03财富客群]...`, duration: 300 },
+    ]
+  } else if (method === 'driver') {
+    const driverByScene = {
+      customer: { sys: '核心业务系统', msg: '拉取2026年4月活跃客户数据，全量客户[328户]，A03客群[203户]' },
+      product: { sys: 'CRM系统', msg: '拉取授信转化客户数据，当月转化客户[286户]，普惠经营贷[157户]' },
+      channel: { sys: 'IT监控系统', msg: '拉取自助设备开机日志，全辖ATM/CDM[6000台时]，营业部[2280台时]' },
+      public: { sys: '人力资源系统', msg: '拉取各条线工时记录，全行科技支持工时[1200h]，零售条线[504h]' }
+    }
+    const d = driverByScene[scene]
+    return [
+      { type: 'api', system: '核心业务系统', message: '调入交易量数据接口 /core/transactions?period=2026-04', duration: 500 },
+      { type: 'api', system: d.sys, message: d.msg, duration: 500 },
+      { type: 'api', system: 'IT监控系统', message: '拉取设备台账，网点设备台数[128台]，设备分布已同步', duration: 400 },
+      { type: 'calc', system: '管理会计平台', message: '驱动因子计算：受益对象[3个]，按交易量/工时比例自动分摊', duration: 400 },
+      { type: 'api', system: '财务系统', message: '查询成本科目[渠道运营费-自助设备]，获取原始发生额[562,000元]', duration: 350 },
+      { type: 'done', system: '管理会计平台', message: `写入归集台账-驱动因子维，分摊结果：营业部[¥253,800] / 零售支行[¥226,980] / 社区银行[¥187,220]`, duration: 300 },
+    ]
+  } else {
+    return [
+      { type: 'api', system: '财务系统', message: '调入公共费用台账接口 /fin/public-costs?period=2026-Q1', duration: 500 },
+      { type: 'api', system: '财务系统', message: '获取总行公共管理费原始发生额[580,000元]，成本性质[品牌支撑]', duration: 450 },
+      { type: 'api', system: '核心业务系统', message: '查询各分行收入贡献比例，计算分配权重[Nanchang:32%/Jiujiang:28%/Fuzhou:40%]', duration: 500 },
+      { type: 'calc', system: '管理会计平台', message: '分摊规则[FR-P001]执行：按收入贡献比例分配至各分行，试算金额确认', duration: 400 },
+      { type: 'api', system: '审批流系统', message: '提交分摊试算结果至审批流，审批节点[分行财务经理→总行运营部]', duration: 400 },
+      { type: 'done', system: '管理会计平台', message: `写入归集台账-公共池维，分摊状态[待审批]，待分行确认后生效`, duration: 300 },
+    ]
+  }
+}
+
+// ============================================================
 // 费用申请页字段（支撑第一分法）
+// ============================================================
 const feeFormFields = [
   { label: '业务单据号', model: 'documentNo', type: 'input', readonly: true },
   { label: '成本科目', model: 'costSubject', type: 'input' },
@@ -86,6 +184,168 @@ function getMethodPage(methodId) {
     pool: { name: '公共成本池管理页', system: '管理会计平台（新增）', color: '#e879f9' }
   }
   return pages[methodId] || pages.direct
+}
+
+// 每个方法对应的外部系统接入来源
+const integrationSources = computed(() => {
+  const m = props.activeMethod
+  const scene = props.activeScene
+  const sceneLabel = { customer: '客户经营活动', product: '产品销售推动', channel: '渠道运营支撑', public: '公共管理支撑' }[scene]
+
+  if (m === 'direct') {
+    return {
+      title: '外部系统数据接入',
+      systems: [
+        { name: '费用报销系统', role: '费用申请原始数据来源', fields: ['documentNo', 'costSubject', 'amount', 'org', 'line'], status: '已对接', color: '#49dcb1' },
+        { name: 'CRM系统', role: '客户经理与客群归属查询', fields: ['owner', 'customerSegment'], status: '已对接', color: '#55c8ff' },
+        { name: '产品管理系统', role: '产品编码与条线映射', fields: ['productCode', 'channel'], status: '已对接', color: '#f7c46a' },
+        { name: '营销管理平台', role: '活动编号与转化数据', fields: ['eventCode'], status: '改造中', color: '#e879f9' }
+      ],
+      note: '直归判定依赖各业务系统在申请环节录入归集字段，审批通过后直接写入归集台账，无需二次分摊。'
+    }
+  } else if (m === 'service') {
+    return {
+      title: '外部系统数据接入',
+      systems: [
+        { name: 'CRM系统', role: '工时登记与管户关系数据', fields: ['documentNo', 'serverStaff', 'workHours', 'workHourRatio'], status: '已对接', color: '#55c8ff' },
+        { name: '人力资源系统', role: '岗位-条线映射与人员归属', fields: ['serverStaff', 'benefitOrgs'], status: '已对接', color: '#49dcb1' },
+        { name: '产品管理系统', role: '产品经理支持产品列表', fields: ['benefitProducts'], status: '新增中', color: '#f7c46a' },
+        { name: '管理会计平台', role: '服务关系自动计算与台账写入', fields: ['workHourRatio', 'serviceTargetCode'], status: '新增中', color: '#e879f9' }
+      ],
+      note: '人力系统提供岗位-条线映射，CRM提供管户关系，工时占比由系统自动计算后写入服务关系台账。'
+    }
+  } else if (m === 'driver') {
+    return {
+      title: '外部系统数据接入',
+      systems: [
+        { name: '核心业务系统', role: '交易量/客户数/资产数据', fields: ['driverValue', 'ratio'], status: '已对接', color: '#55c8ff' },
+        { name: 'IT监控系统', role: '设备台数与开机时长日志', fields: ['driverValue', 'benefitCode'], status: '已对接', color: '#49dcb1' },
+        { name: '财务系统', role: '成本科目与原始发生额', fields: ['costSubject', 'dataSource'], status: '已对接', color: '#f7c46a' },
+        { name: '资产管理系统', role: '网点面积与设备台账', fields: ['benefitType', 'benefitCode'], status: '改造中', color: '#e879f9' }
+      ],
+      note: '驱动因子由各业务系统按采集频率（日/月）推送至管理会计平台，平台按受益对象实际消耗量执行分摊计算。'
+    }
+  } else {
+    return {
+      title: '外部系统数据接入',
+      systems: [
+        { name: '财务系统', role: '公共费用原始数据与成本性质', fields: ['documentNo', 'costSubject', 'trialAmount', 'poolNature'], status: '已对接', color: '#49dcb1' },
+        { name: '核心业务系统', role: '各分行收入贡献比例计算', fields: ['benefitScope', 'poolDimension'], status: '已对接', color: '#55c8ff' },
+        { name: '审批流系统', role: '分摊规则审批与执行状态', fields: ['approvalStatus', 'poolRuleCode'], status: '新增中', color: '#f7c46a' },
+        { name: '管理会计平台', role: '成本池层级配置与分摊规则引擎', fields: ['poolLevel', 'poolRuleCode'], status: '新增中', color: '#e879f9' }
+      ],
+      note: '公共成本池数据由财务系统按月汇总，规则引擎根据配置执行分层分摊，审批通过后方可生效写入台账。'
+    }
+  }
+})
+
+function clearLogs() {
+  integrationLogs.value = []
+}
+
+// ============================================================
+// 加载示例数据：将外部系统数据回填到表单
+// ============================================================
+function applySceneData() {
+  const s = props.scenes[props.activeScene]
+  const m = props.activeMethod
+
+  if (m === 'direct') {
+    Object.assign(props.collectForm, {
+      documentNo: 'FY-2026-0419-00' + (props.activeScene === 'customer' ? '86' : props.activeScene === 'product' ? '87' : props.activeScene === 'channel' ? '88' : '89'),
+      costSubject: s.costType,
+      amount: s.amount,
+      org: '九江银行南昌分行',
+      line: '零售金融部',
+      channel: s.channel.split('/')[0].trim(),
+      productCode: s.product.split('/')[0].trim(),
+      customerSegment: s.customer,
+      eventCode: s.label === '客户经营活动' ? 'ACT-PRIV-2026Q1-015' : s.label === '产品销售推动' ? 'PRD-MKT-2026-006' : s.label === '渠道运营支撑' ? 'CHL-OP-2026-001' : 'PUB-MGMT-2026-001',
+      owner: s.manager,
+      isDirect: '是（直连经营对象）',
+      notes: `${s.label}成本归集，归集方法：${s.method}`
+    })
+  } else if (m === 'service') {
+    const hourMap = { customer: 48, product: 36, channel: 24, public: 16 }
+    const ratioMap = { customer: 32, product: 25, channel: 18, public: 10 }
+    Object.assign(props.collectForm, {
+      documentNo: 'GS-2026-0419-00' + (props.activeScene === 'customer' ? '21' : props.activeScene === 'product' ? '22' : props.activeScene === 'channel' ? '23' : '24'),
+      serverStaff: s.manager,
+      serviceTargetType: '客户/客群',
+      serviceTargetCode: s.customer,
+      serviceAction: `针对${s.customer}的${s.label}服务，记录服务时长、覆盖范围及工时分摊`,
+      servicePeriod: '2026-04-01 至 2026-04-30',
+      workHours: hourMap[props.activeScene],
+      workHourRatio: ratioMap[props.activeScene],
+      benefitProducts: s.product,
+      benefitOrgs: '九江银行南昌分行',
+      enterPool: '直接归集',
+      costSubject: s.costType,
+      driverType: '工时占比',
+      driverValue: hourMap[props.activeScene],
+      ratio: ratioMap[props.activeScene],
+      dataSource: 'CRM系统',
+      collectFreq: '月',
+      poolLevel: '',
+      benefitScope: '',
+      poolDimension: '',
+      poolRuleCode: '',
+      trialAmount: 0,
+      approvalStatus: ''
+    })
+  } else if (m === 'driver') {
+    const driverData = {
+      customer: { item: '高净值客户经营费', driver: '客户数', value: 328, ratio: 62 },
+      product: { item: '产品推广运营费', driver: '授信转化客户数', value: 286, ratio: 55 },
+      channel: { item: '自助设备运营费', driver: '设备开机时长', value: 6000, ratio: 45 },
+      public: { item: '科技系统运维费', driver: '工时占比', value: 1200, ratio: 30 }
+    }
+    const srcMap = { customer: '核心业务系统', product: 'CRM系统', channel: 'IT监控系统', public: '人力资源系统' }
+    const d = driverData[props.activeScene]
+    Object.assign(props.collectForm, {
+      documentNo: 'DF-2026-0419-00' + (props.activeScene === 'customer' ? '31' : props.activeScene === 'product' ? '32' : props.activeScene === 'channel' ? '33' : '34'),
+      costSubject: d.item,
+      driverType: d.driver,
+      driverValue: d.value,
+      ratio: d.ratio,
+      benefitType: '客群',
+      benefitCode: s.customer,
+      dataSource: srcMap[props.activeScene],
+      collectFreq: '月',
+      amount: 0, org: '', line: '', channel: '', productCode: '',
+      customerSegment: '', eventCode: '', owner: '',
+      workHours: 0, workHourRatio: 0,
+      poolLevel: '', benefitScope: '', poolDimension: '',
+      poolRuleCode: '', trialAmount: 0, approvalStatus: ''
+    })
+  } else {
+    const poolData = {
+      customer: { item: '总行公共管理费-客户经营支撑', level: '总行公共池', nature: '品牌支撑', scope: '全行客户经营条线', dimension: '按收入贡献', ruleCode: 'FR-P001', amount: 580000, status: '待审批' },
+      product: { item: '分行运营支撑费-产品推广', level: '分行公共池', nature: '运营支撑', scope: '零售金融部', dimension: '按网点数量', ruleCode: 'FR-P002', amount: 320000, status: '试算中' },
+      channel: { item: '条线公共费-渠道运营', level: '条线公共池', nature: '管理费用', scope: '渠道运营部', dimension: '按业务量', ruleCode: 'FR-P003', amount: 210000, status: '已批准' },
+      public: { item: '网点公共运营费-综合支撑', level: '网点公共池', nature: '人力成本', scope: '全辖网点', dimension: '按面积', ruleCode: 'FR-P004', amount: 145000, status: '待分摊' }
+    }
+    const p = poolData[props.activeScene]
+    Object.assign(props.collectForm, {
+      documentNo: 'CP-2026-0419-00' + (props.activeScene === 'customer' ? '41' : props.activeScene === 'product' ? '42' : props.activeScene === 'channel' ? '43' : '44'),
+      costSubject: p.item,
+      poolLevel: p.level,
+      poolNature: p.nature,
+      benefitScope: p.scope,
+      poolDimension: p.dimension,
+      poolRuleCode: p.ruleCode,
+      trialAmount: p.amount,
+      approvalStatus: p.status,
+      amount: 0, org: '', line: '', channel: '', productCode: '',
+      customerSegment: '', eventCode: '', owner: '', isDirect: '',
+      serverStaff: '', serviceTargetType: '', serviceTargetCode: '',
+      serviceAction: '', servicePeriod: '', workHours: 0, workHourRatio: 0,
+      benefitProducts: '', benefitOrgs: '', enterPool: '',
+      driverType: '', driverValue: 0, ratio: 0, dataSource: '', collectFreq: '',
+      benefitType: '', benefitCode: '',
+      notes: `成本池层级：${p.level}，分摊维度：${p.dimension}，分摊规则：${p.ruleCode}，试算金额：¥${p.amount.toLocaleString()}`
+    })
+  }
 }
 </script>
 
@@ -180,6 +440,80 @@ function getMethodPage(methodId) {
       </div>
     </article>
 
+    <!-- ==================== 数据接入来源面板 ==================== -->
+    <article class="card panel data-source-panel">
+      <div class="title-row">
+        <div>
+          <p class="eyebrow">数据接入</p>
+          <h3>外部系统对接来源</h3>
+        </div>
+        <span class="mini">本方法涉及的数据系统</span>
+      </div>
+
+      <!-- 系统接入卡片 -->
+      <div class="source-systems">
+        <div
+          v-for="sys in integrationSources.systems"
+          :key="sys.name"
+          class="source-card"
+          :style="{ '--src-color': sys.color }"
+        >
+          <div class="source-card-head">
+            <strong>{{ sys.name }}</strong>
+            <span class="source-status" :class="'status-' + sys.status">{{ sys.status }}</span>
+          </div>
+          <p class="source-role">{{ sys.role }}</p>
+          <div class="source-fields">
+            <span v-for="f in sys.fields" :key="f" class="field-badge">{{ f }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 接入说明 -->
+      <div class="source-note">
+        <span class="note-icon">ℹ</span>
+        <p>{{ integrationSources.note }}</p>
+      </div>
+
+      <!-- 数据加载日志 -->
+      <div class="integration-log">
+        <div class="log-header">
+          <strong>数据接入日志</strong>
+          <div class="log-controls">
+            <div v-if="isLoading" class="progress-bar">
+              <div class="progress-fill" :style="{ width: loadProgress + '%' }"></div>
+              <span class="progress-text">{{ loadProgress }}%</span>
+            </div>
+            <button v-if="!isLoading" class="btn-clear" @click="clearLogs">清空</button>
+            <span v-if="isLoading" class="loading-dot">
+              <span></span><span></span><span></span>
+            </span>
+          </div>
+        </div>
+        <div class="log-entries" v-if="integrationLogs.length > 0">
+          <div
+            v-for="(log, i) in integrationLogs"
+            :key="i"
+            class="log-entry"
+            :class="'log-' + log.type"
+          >
+            <span class="log-time">{{ log.time }}</span>
+            <span class="log-system">{{ log.system }}</span>
+            <span class="log-icon">
+              <template v-if="log.type === 'api'">↗</template>
+              <template v-else-if="log.type === 'calc'">⚙</template>
+              <template v-else-if="log.type === 'check'">✓</template>
+              <template v-else-if="log.type === 'done'">✓</template>
+            </span>
+            <span class="log-msg">{{ log.message }}</span>
+          </div>
+        </div>
+        <div v-else class="log-empty">
+          点击「加载示例数据」查看外部系统数据接入过程
+        </div>
+      </div>
+    </article>
+
     <!-- ==================== 业务录入表单 ==================== -->
     <article class="card panel form-panel">
       <div class="title-row">
@@ -187,7 +521,10 @@ function getMethodPage(methodId) {
           <p class="eyebrow">{{ getMethodPage(activeMethod).system }}</p>
           <h3>{{ getMethodPage(activeMethod).name }}</h3>
         </div>
-        <button class="btn-apply" @click="emit('apply-scene')">加载示例数据</button>
+        <button class="btn-apply" :class="{ loading: isLoading }" @click="handleApply" :disabled="isLoading">
+          <span v-if="!isLoading">加载示例数据</span>
+          <span v-else>接入中...</span>
+        </button>
       </div>
 
       <!-- 费用申请表单（第一分法） -->
@@ -376,6 +713,12 @@ function getMethodPage(methodId) {
             <span class="driver-type-tag">{{ tc.driver }}</span>
           </div>
           <div class="driver-targets">
+            <div class="driver-target driver-target-head">
+              <span>受益对象</span>
+              <span>分摊比例</span>
+              <span>驱动值</span>
+              <strong>分摊金额</strong>
+            </div>
             <div v-for="t in tc.targets" :key="t.name" class="driver-target">
               <span>{{ t.name }}</span>
               <span>{{ t.ratio }}</span>
@@ -453,7 +796,6 @@ function getMethodPage(methodId) {
 }
 
 .scene-tab-icon { font-size: 22px; }
-
 .scene-tab strong { display: block; font-size: 14px; }
 .scene-tab small { display: block; color: var(--muted); font-size: 11px; margin-top: 4px; }
 
@@ -514,6 +856,175 @@ function getMethodPage(methodId) {
 .method-tab-btn strong { display: block; font-size: 13px; color: var(--cat-color, var(--cyan)); }
 .method-tab-btn small { display: block; color: var(--muted); font-size: 11px; margin-top: 4px; }
 
+/* ======================================================
+   数据接入来源面板
+   ====================================================== */
+.data-source-panel {
+  grid-column: 1 / -1;
+}
+
+.source-systems {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.source-card {
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(255,255,255,.02);
+  border: 1px solid var(--line);
+  border-top: 2px solid var(--src-color);
+}
+
+.source-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.source-card-head strong { font-size: 12px; color: var(--src-color); }
+
+.source-status {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+.status-已对接 { background: rgba(73,220,177,.2); color: var(--teal); }
+.status-新增中 { background: rgba(247,196,106,.2); color: var(--gold); }
+.status-改造中 { background: rgba(85,200,255,.2); color: var(--cyan); }
+
+.source-role { font-size: 11px; color: var(--muted); margin-bottom: 8px; line-height: 1.4; }
+
+.source-fields { display: flex; flex-wrap: wrap; gap: 4px; }
+.field-badge {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(255,255,255,.06);
+  color: var(--muted);
+  font-family: monospace;
+}
+
+.source-note {
+  display: flex;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(85,200,255,.04);
+  border: 1px solid var(--line);
+  margin-bottom: 12px;
+}
+.note-icon { color: var(--cyan); flex-shrink: 0; }
+.source-note p { font-size: 12px; color: var(--muted); margin: 0; line-height: 1.5; }
+
+/* 接入日志 */
+.integration-log {
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.log-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: rgba(255,255,255,.03);
+  border-bottom: 1px solid var(--line);
+}
+.log-header strong { font-size: 12px; }
+
+.log-controls { display: flex; align-items: center; gap: 10px; }
+
+.progress-bar {
+  position: relative;
+  width: 80px;
+  height: 18px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.06);
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--teal), var(--cyan));
+  border-radius: 999px;
+  transition: width .3s ease;
+}
+.progress-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: white;
+  font-weight: bold;
+}
+
+.loading-dot { display: flex; gap: 4px; align-items: center; }
+.loading-dot span {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--cyan);
+  animation: dot-pulse 1.2s ease-in-out infinite;
+}
+.loading-dot span:nth-child(2) { animation-delay: .2s; }
+.loading-dot span:nth-child(3) { animation-delay: .4s; }
+@keyframes dot-pulse {
+  0%, 80%, 100% { opacity: .3; transform: scale(.8); }
+  40% { opacity: 1; transform: scale(1); }
+}
+
+.btn-clear {
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--line-strong);
+  background: rgba(255,255,255,.04);
+  color: var(--muted);
+  cursor: pointer;
+}
+.btn-clear:hover { background: rgba(255,255,255,.08); }
+
+.log-entries {
+  max-height: 200px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(85,200,255,.3) transparent;
+}
+
+.log-entry {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 7px 14px;
+  border-bottom: 1px solid rgba(255,255,255,.02);
+  font-size: 11px;
+  font-family: 'Fira Code', 'Consolas', monospace;
+  animation: log-slide-in .2s ease;
+}
+@keyframes log-slide-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.log-time { color: var(--muted); flex-shrink: 0; min-width: 68px; }
+.log-system { color: var(--cyan); flex-shrink: 0; min-width: 90px; font-size: 10px; }
+.log-icon { flex-shrink: 0; width: 14px; text-align: center; }
+.log-api .log-icon { color: #55c8ff; }
+.log-calc .log-icon { color: var(--gold); }
+.log-check .log-icon { color: var(--teal); }
+.log-done .log-icon { color: var(--teal); }
+.log-msg { color: var(--text); opacity: .85; flex: 1; line-height: 1.4; }
+
+.log-empty {
+  padding: 20px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 12px;
+}
+
 /* 表单 */
 .form-panel { grid-column: 1 / -1; }
 .form-grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -528,7 +1039,9 @@ function getMethodPage(methodId) {
   font-size: 13px;
   transition: all .18s ease;
 }
-.btn-apply:hover { background: rgba(73,220,177,.2); }
+.btn-apply:hover:not(:disabled) { background: rgba(73,220,177,.2); }
+.btn-apply:disabled { opacity: .6; cursor: not-allowed; }
+.btn-apply.loading { background: rgba(85,200,255,.12); border-color: var(--cyan); color: var(--cyan); }
 
 .direct-redirect-note {
   margin-top: 14px;
@@ -678,6 +1191,8 @@ function getMethodPage(methodId) {
   font-size: 12px;
   align-items: center;
 }
+.driver-target-head { background: rgba(247,196,106,.06); font-size: 11px; color: var(--muted); }
+.driver-target-head span { font-weight: bold; }
 .driver-target strong { text-align: right; color: var(--gold); }
 
 @media (max-width: 1100px) {
@@ -686,5 +1201,6 @@ function getMethodPage(methodId) {
   .form-grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .driver-factor-display { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .pool-levels { grid-template-columns: 1fr; }
+  .source-systems { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 </style>
