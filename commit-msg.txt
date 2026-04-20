@@ -1,9 +1,12 @@
-fix: diversify scene data and improve system integration map layout
+feat: redesign ROI page into a full business decision support platform
 
-- Redesign system integration map: left source systems, center management
-  accounting platform, right data supply systems, bottom output layer
-- Fix system tags: only management accounting platform is new, all others
-  are transform or integrate
-- Diversify four scene data amounts with distinct ROI and allocation ratios
-- Fix hardcoded amount in integration log message
-- Clean up unused CSS classes from old layout
+- Add 4 interactive dimension tabs (customer/product/channel/management)
+  with dynamic KPI cards, perspective-specific content, and peer comparisons
+- Add ROI and cost trend chart across 5 historical periods with delta tracking
+- Add 4-method cost structure breakdown panel with bar visualization
+  and contextual interpretation hints per dimension
+- Add dynamic optimization recommendations generated from scene+dimension
+  context with actionable chips
+- Add cost simulation slider: drag to adjust cost input and see ROI change
+- Remove unused productRows/roiSummary props; all data derived from scenes
+

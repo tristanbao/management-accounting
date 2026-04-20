@@ -762,8 +762,6 @@ const money = (v) => new Intl.NumberFormat('zh-CN', {
       <!-- ROI分析 -->
       <RoiPage
         v-else-if="activePage === 'roi'"
-        :product-rows="productRows"
-        :roi-summary="roiSummary"
         :scenes="dynamicScenes"
         :active-scene="activeScene"
         :active-period="activePeriod"
