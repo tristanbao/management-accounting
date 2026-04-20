@@ -368,11 +368,11 @@ const traceRows = [
 // ROI分析数据
 // ============================================================
 const productRows = [
-  { name: '稳利盈6M理财', type: '财富产品', clients: 126, revenue: 357000, cost: 186000, roi: 1.92, status: '投入产出优', suggestion: '维持投入规模' },
-  { name: '普惠经营贷', type: '对公贷款', clients: 84, revenue: 814000, cost: 528000, roi: 1.54, status: '渠道待优化', suggestion: '优化企业网银渠道配置' },
-  { name: '白鹭信用卡（新客礼遇）', type: '信用卡', clients: 214, revenue: 628000, cost: 295000, roi: 2.13, status: '获客效率优', suggestion: '加大线上获客投入' },
-  { name: '手机银行运营费', type: '渠道运营', clients: 342000, revenue: 791000, cost: 342000, roi: 2.31, status: '渠道ROI最优', suggestion: '数字化投入可加大' },
-  { name: '高净值客群经营', type: '客户经营', clients: 328, revenue: 1650000, cost: 762000, roi: 2.17, status: '客群价值高', suggestion: '重点加大AUM≥600万客群' }
+  { name: '个人储蓄存款（定期）', type: '储蓄存款', clients: 2860, revenue: 428000, cost: 186000, roi: 2.30, status: '投入产出优', suggestion: '维持定期存款产品投入，加大三年期以上营销' },
+  { name: '普惠小微贷款', type: '普惠贷款', clients: 842, revenue: 814000, cost: 528000, roi: 1.54, status: '渠道待优化', suggestion: '优化贷款审批流程，提升小企业主获客效率' },
+  { name: '个人住房贷款', type: '个人贷款', clients: 1246, revenue: 386000, cost: 245000, roi: 1.58, status: '良好', suggestion: '稳定投放规模，关注不良率控制' },
+  { name: '手机银行', type: '数字渠道', clients: 342000, revenue: 386000, cost: 68000, roi: 5.68, status: 'ROI最优', suggestion: '继续加大数字化投入，扩大手机银行渗透率' },
+  { name: '理财代销（稳利盈系列）', type: '中间业务', clients: 892, revenue: 357000, cost: 186000, roi: 1.92, status: '投入产出优', suggestion: '扩大代销理财规模，筛选优质产品' }
 ]
 
 const roiSummary = [
