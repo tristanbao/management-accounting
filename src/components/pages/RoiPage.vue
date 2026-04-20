@@ -109,12 +109,11 @@ const sceneAnalysisData = computed(() => {
         { label: '渠道ROI', value: s.roi.roi > 0 ? s.roi.roi + 'x' : '—', sub: '数字渠道领先' }
       ],
       channels: [
-        { name: '南昌分行营业部', txn: 486000, amount: '12.8亿', cost: 268000, roi: 4.80, status: '良好', trend: 'up', fill: 90 },
-        { name: '九江分行营业部', txn: 368000, amount: '9.9亿', cost: 245000, roi: 4.02, status: '良好', trend: 'up', fill: 78 },
-        { name: '福州分行营业部', txn: 256000, amount: '6.3亿', cost: 186000, roi: 3.38, status: '一般', trend: 'stable', fill: 62 },
-        { name: '县域支行（汇总）', txn: 198000, amount: '4.9亿', cost: 198000, roi: 2.45, status: '待优化', trend: 'down', fill: 48 },
-        { name: '手机银行', txn: 896000, amount: '18.6亿', cost: 68000, roi: 5.68, status: 'ROI最优', trend: 'up', fill: 95 },
-        { name: '网上银行（企业）', txn: 324000, amount: '8.2亿', cost: 42000, roi: 3.38, status: '良好', trend: 'up', fill: 72 }
+        { name: '南昌分行营业部', branch: '南昌分行', txn: 486000, amount: '12.8亿', cost: 268000, roi: 4.80, status: '良好', trend: 'up', fill: 90 },
+        { name: '九江分行营业部', branch: '九江分行', txn: 368000, amount: '9.9亿', cost: 245000, roi: 4.02, status: '良好', trend: 'up', fill: 78 },
+        { name: '福州分行营业部', branch: '福州分行', txn: 256000, amount: '6.3亿', cost: 186000, roi: 3.38, status: '一般', trend: 'stable', fill: 62 },
+        { name: '手机银行', branch: '数字渠道', txn: 896000, amount: '18.6亿', cost: 68000, roi: 5.68, status: 'ROI最优', trend: 'up', fill: 95 },
+        { name: '网上银行（企业）', branch: '数字渠道', txn: 324000, amount: '8.2亿', cost: 42000, roi: 3.38, status: '良好', trend: 'up', fill: 72 }
       ],
       waterfall: s.methodDetail ? [
         { step: '渠道专属直归', amount: s.methodDetail.direct?.amount || 0, ratio: s.methodDetail.direct?.ratio || 0, desc: '网点专属设备等', color: '#49dcb1' },
@@ -309,16 +308,15 @@ const allEntityRanking = computed(() => {
     { name: '新市民客群', type: '普惠客户', dimension: 'customer', revenue: 98000, cost: 128000, roi: 0.77, status: '亏损', suggestion: '重新评估获客策略，筛选优质新市民客户' }
   ]
 
-  // 渠道数据（含网点）
+  // 渠道数据（按分行归属）
   const channels = [
-    { name: '手机银行', type: '数字渠道', dimension: 'channel', revenue: 386000, cost: 68000, roi: 5.68, status: 'ROI最优', suggestion: '继续加大数字化投入，扩大手机银行渗透率' },
-    { name: '网上银行（企业）', type: '数字渠道', dimension: 'channel', revenue: 142000, cost: 42000, roi: 3.38, status: '良好', suggestion: '优化企业网银产品配置，提升企业客户覆盖率' },
-    { name: '柜面渠道（南昌分行营业部）', type: '物理网点', dimension: 'channel', revenue: 1286000, cost: 268000, roi: 4.80, status: '良好', suggestion: '控制网点运营成本，推动柜面业务向自助迁移' },
-    { name: '柜面渠道（九江分行营业部）', type: '物理网点', dimension: 'channel', revenue: 986000, cost: 245000, roi: 4.02, status: '良好', suggestion: '优化网点人员配置，提升人均效能' },
-    { name: '柜面渠道（福州分行营业部）', type: '物理网点', dimension: 'channel', revenue: 628000, cost: 186000, roi: 3.38, status: '良好', suggestion: '提升福州地区获客转化率' },
-    { name: '柜面渠道（县域支行汇总）', type: '物理网点', dimension: 'channel', revenue: 486000, cost: 198000, roi: 2.45, status: '待优化', suggestion: '评估低效县域网点，考虑撤并或降格' },
-    { name: '直销客户经理团队', type: '人工程道', dimension: 'channel', revenue: 186000, cost: 142000, roi: 1.31, status: '低效', suggestion: '重新评估直销团队ROI阈值，建立产能考核' },
-    { name: '客服中心', type: '服务渠道', dimension: 'channel', revenue: 86000, cost: 62000, roi: 1.39, status: '待优化', suggestion: '提升自助渠道分流率，控制人工客服成本' }
+    { name: '手机银行', type: '数字渠道', dimension: 'channel', revenue: 386000, cost: 68000, roi: 5.68, status: 'ROI最优', suggestion: '继续加大数字化投入，扩大手机银行渗透率', branch: '总行直管' },
+    { name: '网上银行（企业）', type: '数字渠道', dimension: 'channel', revenue: 142000, cost: 42000, roi: 3.38, status: '良好', suggestion: '优化企业网银产品配置，提升企业客户覆盖率', branch: '总行直管' },
+    { name: '南昌分行营业部', type: '分行营业部', dimension: 'channel', revenue: 1286000, cost: 268000, roi: 4.80, status: '良好', suggestion: '控制网点运营成本，推动柜面业务向自助迁移', branch: '南昌分行' },
+    { name: '九江分行营业部', type: '分行营业部', dimension: 'channel', revenue: 986000, cost: 245000, roi: 4.02, status: '良好', suggestion: '优化网点人员配置，提升人均效能', branch: '九江分行' },
+    { name: '福州分行营业部', type: '分行营业部', dimension: 'channel', revenue: 628000, cost: 186000, roi: 3.38, status: '一般', suggestion: '提升福州地区获客转化率', branch: '福州分行' },
+    { name: '直销客户经理团队', type: '人工程道', dimension: 'channel', revenue: 186000, cost: 142000, roi: 1.31, status: '低效', suggestion: '重新评估直销团队ROI阈值，建立产能考核', branch: '零售金融部' },
+    { name: '客服中心', type: '服务渠道', dimension: 'channel', revenue: 86000, cost: 62000, roi: 1.39, status: '待优化', suggestion: '提升自助渠道分流率，控制人工客服成本', branch: '总行直管' }
   ]
 
   products.forEach(p => entities.push(p))
@@ -610,7 +608,7 @@ const roiTextClass = (r) => r >= 2 ? 'text-teal' : r >= 1.5 ? 'text-gold' : r >=
             <div class="channel-meta">
               <span class="channel-name">{{ ch.name }}</span>
               <span class="channel-stats">
-                {{ ch.txn.toLocaleString() }}笔 · {{ ch.amount }}
+                {{ ch.txn.toLocaleString() }}笔 · {{ ch.amount }} · {{ ch.branch }}
                 <span class="roi-badge ml-8" :class="roiClass(ch.roi)">{{ ch.roi }}x</span>
               </span>
             </div>
@@ -752,6 +750,7 @@ const roiTextClass = (r) => r >= 2 ? 'text-teal' : r >= 1.5 ? 'text-gold' : r >=
               <th>维度</th>
               <th>实体名称</th>
               <th>类型</th>
+              <th>归属机构</th>
               <th>收入</th>
               <th>成本</th>
               <th>ROI</th>
@@ -776,6 +775,7 @@ const roiTextClass = (r) => r >= 2 ? 'text-teal' : r >= 1.5 ? 'text-gold' : r >=
               </td>
               <td><strong>{{ entity.name }}</strong></td>
               <td><span class="type-tag">{{ entity.type }}</span></td>
+              <td><span class="type-tag">{{ entity.branch || '—' }}</span></td>
               <td>{{ money(entity.revenue) }}</td>
               <td>{{ money(entity.cost) }}</td>
               <td>
